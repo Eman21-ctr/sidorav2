@@ -117,7 +117,7 @@ export const DashboardOverview = ({
             Dasbor Komunikasi &amp; Kepatuhan Pasien Rawat Jalan
           </h2>
           <p className="text-xs sm:text-sm text-slate-300">
-            Pemantauan kepatuhan minum obat harian, jadwal kontrol dokter psikiatri, dan pengambilan obat iterasi farmasi.
+            Pemantauan kepatuhan minum obat harian dan jadwal kontrol dokter.
           </p>
         </div>
       </div>
