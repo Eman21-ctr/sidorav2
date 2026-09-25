@@ -1,5 +1,5 @@
 # PANDUAN PENGGUNAAN APLIKASI "SIDORA"
-### Sistem Otomasi Notifikasi WhatsApp Pasien Rumah Sakit Jiwa (RSJ)
+### Sistem Informasi Digital Pengobatan Rawat Jalan
 **Versi:** Prototype V2.0 (Edisi Presentasi & Sistem Otomatis Terjadwal)  
 **Target Pengguna:** Administrator RSJ, Perawat Poliklinik Jiwa, Staf Instalasi Farmasi, Dokter Penanggung Jawab Pelayanan (DPJP), dan Tim Penguji Prototype.
 

@@ -1,6 +1,6 @@
 -- ============================================================
 -- SIDORA - Supabase Database Schema
--- Sistem Otomasi Notifikasi WhatsApp Pasien RSJ
+-- Sistem Informasi Digital Pengobatan Rawat Jalan
 -- ============================================================
 -- Jalankan SQL ini di Supabase Dashboard → SQL Editor → New Query
 -- ============================================================

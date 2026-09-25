@@ -59,7 +59,7 @@ export const SidoraLogo: React.FC<SidoraLogoProps> = ({
             </span>
           </div>
           <p className={`text-slate-500 font-medium ${currentSize.sub} leading-tight tracking-normal mt-0.5`}>
-            Sistem Otomasi Notifikasi WhatsApp Pasien
+            Sistem Informasi Digital Pengobatan Rawat Jalan
           </p>
         </div>
       )}

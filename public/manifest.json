@@ -1,7 +1,7 @@
 {
   "name": "Sidora - Notifikasi RSJ",
   "short_name": "Sidora",
-  "description": "Sistem Otomasi Notifikasi WhatsApp Pasien Psikiatri RSJ Naimata",
+  "description": "Sistem Informasi Digital Pengobatan Rawat Jalan",
   "start_url": "/",
   "id": "/",
   "display": "standalone",
