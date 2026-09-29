@@ -107,7 +107,7 @@ export const INITIAL_PATIENTS: Patient[] = [
       siang: '12:30',
       malam: '20:00',
     },
-    kepatuhanMinumObatPersen: 92,
+    kepatuhanMinumObatPersen: 0,
     jadwalKontrol: {
       tanggal: '2026-09-25', // H-3 dari hari ini (2026-09-22)
       jam: '09:00',
@@ -177,7 +177,7 @@ export const INITIAL_PATIENTS: Patient[] = [
       siang: '13:00',
       malam: '20:30',
     },
-    kepatuhanMinumObatPersen: 96,
+    kepatuhanMinumObatPersen: 0,
     jadwalKontrol: {
       tanggal: '2026-09-23', // H-1 dari hari ini!
       jam: '10:30',
@@ -244,7 +244,7 @@ export const INITIAL_PATIENTS: Patient[] = [
       siang: '12:00',
       malam: '19:00',
     },
-    kepatuhanMinumObatPersen: 68,
+    kepatuhanMinumObatPersen: 0,
     jadwalKontrol: {
       tanggal: '2026-09-22', // HARI INI!
       jam: '08:30',
@@ -311,7 +311,7 @@ export const INITIAL_PATIENTS: Patient[] = [
       siang: '12:00',
       malam: '21:00',
     },
-    kepatuhanMinumObatPersen: 94,
+    kepatuhanMinumObatPersen: 0,
     jadwalKontrol: {
       tanggal: '2026-10-02',
       jam: '11:00',
@@ -378,7 +378,7 @@ export const INITIAL_PATIENTS: Patient[] = [
       siang: '12:30',
       malam: '20:00',
     },
-    kepatuhanMinumObatPersen: 88,
+    kepatuhanMinumObatPersen: 0,
     jadwalKontrol: {
       tanggal: '2026-09-25', // H-3
       jam: '09:30',

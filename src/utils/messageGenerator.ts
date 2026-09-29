@@ -1,5 +1,6 @@
 import { Patient, MessageTemplate, WhatsAppMessage } from '../types';
 import { RSJ_INFO } from '../data/initialData';
+import * as XLSX from 'xlsx';
 
 export function formatIndonesianDate(dateStr: string): string {
   if (!dateStr || dateStr === '-') return '-';
@@ -87,7 +88,7 @@ export function generatePersonalizedMessage(
   };
 }
 
-export function exportMessagesToCSV(messages: WhatsAppMessage[]): void {
+export function exportMessagesToExcel(messages: WhatsAppMessage[]): void {
   const headers = [
     'ID Pesan',
     'No. Rekam Medis',
@@ -95,7 +96,7 @@ export function exportMessagesToCSV(messages: WhatsAppMessage[]): void {
     'Penerima',
     'Tipe Penerima',
     'No. WhatsApp',
-    'Kategori Reminder',
+    'Kategori Pengingat',
     'Judul Pesan',
     'Status Pesan',
     'Jadwal Kirim',
@@ -107,31 +108,48 @@ export function exportMessagesToCSV(messages: WhatsAppMessage[]): void {
   ];
 
   const rows = messages.map(m => [
-    `"${m.id}"`,
-    `"${m.noRM}"`,
-    `"${m.patientName}"`,
-    `"${m.recipientName}"`,
-    `"${m.recipientType}"`,
-    `"${m.recipientPhone}"`,
-    `"${m.category}"`,
-    `"${m.title.replace(/"/g, '""')}"`,
-    `"${m.status}"`,
-    `"${m.scheduledAt}"`,
-    `"${m.sentAt || '-'}"`,
-    `"${m.readAt || '-'}"`,
-    `"${m.repliedAt || '-'}"`,
-    `"${(m.replyText || '-').replace(/"/g, '""')}"`,
-    `"${m.bspProvider}"`
+    m.id,
+    m.noRM,
+    m.patientName,
+    m.recipientName,
+    m.recipientType,
+    m.recipientPhone,
+    m.category === 'minum_obat' ? 'Minum Obat' :
+    m.category === 'kontrol_dokter' ? 'Kontrol Dokter' :
+    m.category === 'iter_resep' ? 'Iterasi Resep' :
+    m.category === 'edukasi_rsj' ? 'Edukasi / Afirmasi' : m.category,
+    m.title,
+    m.status === 'delivered' ? 'Terkirim' :
+    m.status === 'read' ? 'Terbaca' :
+    m.status === 'replied' ? 'Dibalas' :
+    m.status === 'failed' ? 'Gagal' : 'Menunggu',
+    m.scheduledAt || '-',
+    m.sentAt || '-',
+    m.readAt || '-',
+    m.repliedAt || '-',
+    m.replyText || '-',
+    m.bspProvider || '-'
   ]);
 
-  const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' 
-    + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
 
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `Laporan_Pesan_RSJ_${new Date().toISOString().slice(0, 10)}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  // Dynamic column widths for clean readability in Excel
+  const colWidths = headers.map((h, i) => {
+    const maxLen = Math.max(
+      h.length,
+      ...rows.map(r => (r[i] != null ? String(r[i]).length : 0))
+    );
+    return { wch: Math.min(Math.max(maxLen + 3, 12), 45) };
+  });
+  worksheet['!cols'] = colWidths;
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan Pesan WhatsApp');
+
+  const fileName = `Laporan_Pesan_RSJ_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  XLSX.writeFile(workbook, fileName);
 }
+
+// Backwards compatibility alias for existing callers
+export const exportMessagesToCSV = exportMessagesToExcel;
+

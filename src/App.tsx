@@ -108,6 +108,16 @@ export default function App() {
       setAnalytics(emptyAnalytics);
       syncAnalytics(emptyAnalytics);
       await syncDeleteAllMessages();
+
+      // Reset juga tingkat kepatuhan seluruh pasien ke 0% agar konsisten dengan log pesan yang kosong
+      setPatients(prev => {
+        const resetPatients = prev.map(p => ({
+          ...p,
+          kepatuhanMinumObatPersen: 0,
+        }));
+        syncPatients(resetPatients);
+        return resetPatients;
+      });
     }
   };
 
@@ -204,7 +214,7 @@ export default function App() {
     
     let targetPatientId: string | null = null;
 
-    setMessages(prev => prev.map(m => {
+    const updatedMessages = messages.map(m => {
       if (m.id === messageId) {
         targetPatientId = m.patientId;
         const updatedMsg = {
@@ -217,16 +227,30 @@ export default function App() {
         return updatedMsg;
       }
       return m;
-    }));
+    });
+
+    setMessages(updatedMessages);
 
     // If it's a positive confirmation for medication (reply contains '1' or 'sudah'), update patient compliance!
     if (targetPatientId) {
       setPatients(prev => prev.map(p => {
         if (p.id === targetPatientId) {
           const isAffirmative = replyText.includes('1') || replyText.toLowerCase().includes('sudah');
-          const newCompliance = isAffirmative 
-            ? Math.min(100, p.kepatuhanMinumObatPersen + 2)
-            : p.kepatuhanMinumObatPersen;
+          
+          // Hitung kepatuhan pasien murni berdasarkan riwayat pesan minum obat yang dikirim & dibalas
+          const patientMedMsgs = updatedMessages.filter(
+            m => m.patientId === targetPatientId && m.category === 'minum_obat' && m.status !== 'queued' && m.status !== 'failed'
+          );
+
+          let newCompliance = p.kepatuhanMinumObatPersen;
+          if (patientMedMsgs.length > 0) {
+            const confirmedCount = patientMedMsgs.filter(
+              m => m.status === 'replied' && (m.replyText?.includes('1') || m.replyText?.toLowerCase().includes('sudah'))
+            ).length;
+            newCompliance = Math.round((confirmedCount / patientMedMsgs.length) * 100);
+          } else if (isAffirmative) {
+            newCompliance = 100;
+          }
           
           // If reply is for control confirmation
           let konfirmasi = p.jadwalKontrol.konfirmasiKehadiran;
@@ -252,7 +276,6 @@ export default function App() {
     }
 
     // Update live daily analytics
-    const updatedMessages = messages.map(m => m.id === messageId ? { ...m, status: 'replied' as const, replyText, repliedAt: now } : m);
     const updatedAnalytics = computeRealDailyAnalytics(updatedMessages);
     setAnalytics(updatedAnalytics);
     syncAnalytics(updatedAnalytics);

@@ -31,6 +31,7 @@ import {
   clearAllManualDailyRecords 
 } from '../services/manualStatsService';
 import { getTodayDateStr, formatIndoDate } from '../utils/analyticsHelper';
+import * as XLSX from 'xlsx';
 
 export const ManualDashboard = () => {
   const [records, setRecords] = useState<ManualDailyRecord[]>([]);
@@ -370,8 +371,8 @@ export const ManualDashboard = () => {
     }
   };
 
-  // Ekspor Data ke CSV
-  const handleExportCSV = () => {
+  // Ekspor Data ke Excel (.xlsx)
+  const handleExportExcel = () => {
     if (filteredRecords.length === 0) {
       alert('Tidak ada data dalam rentang tanggal ini untuk diekspor.');
       return;
@@ -400,25 +401,34 @@ export const ManualDashboard = () => {
       r.read,
       r.replied,
       r.failed,
-      `${r.readRate}%`,
-      `${r.replyRate}%`,
-      `${r.complianceRate}%`,
+      r.readRate,
+      r.replyRate,
+      r.complianceRate,
       r.kategoriObat,
       r.kategoriKontrol,
       r.kategoriIter,
       r.kategoriEdukasi,
-      `"${r.petugas || ''}"`,
-      `"${r.catatan || ''}"`,
+      r.petugas || '-',
+      r.catatan || '-',
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `sidora_manual_${startDate}_sd_${endDate}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+    // Dynamic column widths for clean readability in Excel
+    const colWidths = headers.map((h, i) => {
+      const maxLen = Math.max(
+        h.length,
+        ...rows.map(r => (r[i] != null ? String(r[i]).length : 0))
+      );
+      return { wch: Math.min(Math.max(maxLen + 3, 12), 40) };
+    });
+    worksheet['!cols'] = colWidths;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Rekapan Manual SiDora');
+
+    const fileName = `sidora_manual_${startDate}_sd_${endDate}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
   };
 
   // Scaling untuk SVG Bar Chart
@@ -471,13 +481,13 @@ export const ManualDashboard = () => {
               {isFormOpen ? 'Tutup Form Isian' : '➕ Buka Form Isian'}
             </button>
             <button
-              onClick={handleExportCSV}
+              onClick={handleExportExcel}
               disabled={filteredRecords.length === 0}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-700/60 hover:bg-emerald-700 text-emerald-100 border border-emerald-500/40 transition-all disabled:opacity-40"
-              title="Ekspor data rekapan ke CSV"
+              title="Ekspor data rekapan harian ke format Excel (.xlsx)"
             >
               <Download className="w-3.5 h-3.5" />
-              Ekspor CSV
+              Ekspor Excel (.xlsx)
             </button>
             <button
               onClick={handleClearAll}

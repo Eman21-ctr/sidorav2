@@ -16,7 +16,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { WhatsAppMessage, ReminderCategory, MessageStatus } from '../types';
-import { exportMessagesToCSV } from '../utils/messageGenerator';
+import { exportMessagesToExcel } from '../utils/messageGenerator';
 
 interface ReportsAndLogsProps {
   messages: WhatsAppMessage[];
@@ -106,11 +106,12 @@ export const ReportsAndLogs = ({ messages, onDeleteAllMessages }: ReportsAndLogs
             </button>
           )}
           <button
-            onClick={() => exportMessagesToCSV(filteredMessages)}
+            onClick={() => exportMessagesToExcel(filteredMessages)}
             className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold shadow-xs transition-all flex items-center gap-1.5"
+            title="Unduh seluruh log pesan yang terfilter dalam format Excel (.xlsx)"
           >
             <Download className="w-4 h-4 text-emerald-400" />
-            Ekspor Laporan (CSV)
+            Ekspor Excel (.xlsx)
           </button>
         </div>
       </div>

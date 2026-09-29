@@ -18,9 +18,11 @@ import {
   HelpCircle,
   UserX,
   ShieldAlert,
-  Sparkles
+  Sparkles,
+  Download
 } from 'lucide-react';
 import { Patient, RiskLevel, MedicationItem, SupervisionStatus } from '../types';
+import * as XLSX from 'xlsx';
 
 interface PatientManagementProps {
   patients: Patient[];
@@ -105,7 +107,7 @@ export const PatientManagement = ({
         siang: '12:30',
         malam: '20:00',
       },
-      kepatuhanMinumObatPersen: 90,
+      kepatuhanMinumObatPersen: 0,
       jadwalKontrol: {
         tanggal: '2026-10-15',
         jam: '09:00',
@@ -177,6 +179,88 @@ export const PatientManagement = ({
     setFormData({ ...formData, obatRutin: currentMeds.filter(m => m.id !== id) });
   };
 
+  const handleExportPatientsExcel = () => {
+    if (filteredPatients.length === 0) {
+      alert('Tidak ada data pasien untuk diekspor.');
+      return;
+    }
+
+    const headers = [
+      'No. RM',
+      'Nama Pasien',
+      'NIK',
+      'Jenis Kelamin',
+      'Usia (Th)',
+      'No. WhatsApp Pasien',
+      'Alamat',
+      'Diagnosa Medis',
+      'Dokter DPJP',
+      'Poliklinik',
+      'Status Pengawasan',
+      'Tingkat Risiko',
+      'Kepatuhan Obat (%)',
+      'Nama Caregiver',
+      'Hubungan Caregiver',
+      'No. WhatsApp Caregiver',
+      'Sasaran Pesan',
+      'Daftar Obat Rutin',
+      'Jadwal Kontrol Berikutnya',
+      'Dokter Kontrol',
+      'Poli Kontrol',
+      'Ada Iter Resep',
+      'No. Resep Iter',
+      'Tanggal Iter',
+      'Sisa Iterasi',
+      'Catatan Khusus',
+    ];
+
+    const rows = filteredPatients.map(p => [
+      p.noRM,
+      p.nama,
+      p.nik || '-',
+      p.jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan',
+      p.usia,
+      p.noTelepon,
+      p.alamat || '-',
+      p.diagnosaMedis,
+      p.dokterDPJP,
+      p.poliklinik,
+      p.statusPengawasan === 'dalam_pengawasan' ? 'Dalam Pengawasan' : 'Luar Pengawasan',
+      p.riskLevel === 'stabil' ? 'Stabil (Rutin)' : p.riskLevel === 'pengawasan' ? 'Perlu Pengawasan' : 'Rawan Putus Obat',
+      p.kepatuhanMinumObatPersen,
+      p.caregiver?.nama || '-',
+      p.caregiver?.hubungan || '-',
+      p.caregiver?.noTelepon || '-',
+      p.caregiver?.targetPenerima === 'pasien' ? 'Pasien Saja' : p.caregiver?.targetPenerima === 'caregiver' ? 'Caregiver Saja' : 'Keduanya',
+      p.obatRutin?.map(m => `${m.namaObat} ${m.dosis} (${m.aturanPakai})`).join('; ') || '-',
+      p.jadwalKontrol?.tanggal ? `${p.jadwalKontrol.tanggal} ${p.jadwalKontrol.jam}` : '-',
+      p.jadwalKontrol?.dokter || '-',
+      p.jadwalKontrol?.poli || '-',
+      p.jadwalIter?.adaIter ? 'Ya' : 'Tidak',
+      p.jadwalIter?.nomorResep || '-',
+      p.jadwalIter?.tanggalIter || '-',
+      p.jadwalIter?.sisaIterasi != null ? `${p.jadwalIter.sisaIterasi}x dari ${p.jadwalIter.totalIterasi}x` : '-',
+      p.catatanKhusus || '-',
+    ]);
+
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+    const colWidths = headers.map((h, i) => {
+      const maxLen = Math.max(
+        h.length,
+        ...rows.map(r => (r[i] != null ? String(r[i]).length : 0))
+      );
+      return { wch: Math.min(Math.max(maxLen + 3, 12), 45) };
+    });
+    worksheet['!cols'] = colWidths;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Pasien RSJ');
+
+    const fileName = `Data_Pasien_RSJ_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Section */}
@@ -190,7 +274,7 @@ export const PatientManagement = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {onDeleteAllPatients && patients.length > 0 && (
             <button
               onClick={onDeleteAllPatients}
@@ -201,6 +285,15 @@ export const PatientManagement = ({
               Kosongkan Data Pasien
             </button>
           )}
+          <button
+            onClick={handleExportPatientsExcel}
+            disabled={filteredPatients.length === 0}
+            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-all flex items-center gap-1.5 shadow-2xs disabled:opacity-50"
+            title="Unduh daftar data pasien dalam format Excel (.xlsx)"
+          >
+            <Download className="w-4 h-4 text-emerald-600" />
+            Ekspor Excel (.xlsx)
+          </button>
           <button
             onClick={handleOpenAddModal}
             className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all flex items-center gap-2"
