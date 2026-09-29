@@ -209,6 +209,67 @@ export default function App() {
     syncMessage(newMsg);
   };
 
+  // Handler for Mass Broadcast Simulation from WhatsApp Simulator
+  const handleBatchSendMessages = (newMessages: WhatsAppMessage[]) => {
+    if (newMessages.length === 0) return;
+    const allMessages = [...newMessages, ...messages];
+    setMessages(allMessages);
+
+    // Update patient's last contacted timestamp
+    const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
+    setPatients(prev => prev.map(p => {
+      const wasMessaged = newMessages.some(m => m.patientId === p.id);
+      if (wasMessaged) {
+        const updated = {
+          ...p,
+          terakhirDihubungi: nowStr,
+        };
+        syncPatient(updated);
+        return updated;
+      }
+      return p;
+    }));
+
+    // Update live daily analytics
+    const todayDateStr = getTodayDateStr();
+    const updatedAnalytics = computeRealDailyAnalytics(allMessages, todayDateStr);
+    setAnalytics(updatedAnalytics);
+    syncAnalytics(updatedAnalytics);
+
+    // Increment used quota in BSP config
+    setBspConfig(prev => {
+      const updated = {
+        ...prev,
+        pesanTerpakaiBulanIni: prev.pesanTerpakaiBulanIni + newMessages.length,
+      };
+      syncBSPConfig(updated);
+      return updated;
+    });
+
+    // Persist batch messages to Supabase
+    syncMessages(newMessages);
+
+    // Update automation stats
+    const timeLabel = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+    const updatedSettings = {
+      ...automationSettings,
+      terakhirDieksekusi: `Hari ini, ${timeLabel} (Simulasi Pengiriman Massal)`,
+      totalPesanTerkirimOtomatis: automationSettings.totalPesanTerkirimOtomatis + newMessages.length,
+    };
+    setAutomationSettings(updatedSettings);
+    syncAutomationSettings(updatedSettings);
+
+    setAutoToast({
+      visible: true,
+      title: 'Simulasi Pengiriman Massal Berhasil!',
+      message: `${newMessages.length} pesan pengingat sukses disalurkan ke WhatsApp pasien & caregiver. Data metrik di Dasbor Utama otomatis diperbarui!`,
+      count: newMessages.length,
+    });
+    setTimeout(() => {
+      setAutoToast(prev => ({ ...prev, visible: false }));
+    }, 6000);
+  };
+
   const handleReceiveReply = (messageId: string, replyText: string) => {
     const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
     
@@ -677,6 +738,9 @@ export default function App() {
             bspConfig={bspConfig}
             onSendMessage={handleSendMessage}
             onReceiveReply={handleReceiveReply}
+            onBatchSend={handleBatchSendMessages}
+            onNavigateToDashboard={() => setCurrentTab('dashboard')}
+            onNavigateToReports={() => setCurrentTab('laporan')}
             initialPatientId={targetPatientForSimulator}
           />
         )}
