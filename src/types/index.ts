@@ -184,3 +184,57 @@ export interface AutomationSettings {
   terakhirDieksekusi?: string;
   totalPesanTerkirimOtomatis: number;
 }
+
+export interface ManualStats {
+  id: string;           // 'default' or date-based
+  tanggalInput: string; // Tanggal input manual (YYYY-MM-DD)
+  periode: string;      // Label periode (misal: "September 2026", "Minggu ke-3 September 2026")
+
+  // Statistik Pengiriman Pesan
+  pesanTerkirim: number;
+  pesanDiterima: number;
+  pesanTerbaca: number;
+  pesanTerbalas: number;
+  pesanGagal: number;
+
+  // Tingkat Persentase
+  tingkatTerbaca: number;    // Persentase
+  tingkatBalasan: number;    // Persentase
+
+  // Kepatuhan
+  kepatuhanObatRataRata: number; // Persentase rata-rata kepatuhan minum obat
+  jumlahPasienAktif: number;
+
+  // Distribusi Kategori Pesan
+  kategoriMinumObat: number;
+  kategoriKontrolDokter: number;
+  kategoriIterResep: number;
+  kategoriEdukasi: number;
+
+  // Catatan / Keterangan
+  catatan?: string;
+  
+  // Metadata
+  diinputOleh?: string;       // Nama petugas yang input
+  terakhirDiupdate?: string;  // Timestamp terakhir diupdate
+}
+
+export interface ManualDailyRecord {
+  date: string; // "YYYY-MM-DD" (Primary Key)
+  totalSent: number;
+  delivered: number;
+  read: number;
+  replied: number;
+  failed: number;
+  readRate: number; // %
+  replyRate: number; // %
+  complianceRate: number; // % Kepatuhan Minum Obat
+  kategoriObat: number;
+  kategoriKontrol: number;
+  kategoriIter: number;
+  kategoriEdukasi: number;
+  petugas?: string;
+  catatan?: string;
+  updatedAt?: string;
+}
+

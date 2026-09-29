@@ -362,7 +362,7 @@ export const DashboardOverview = ({
                 Grafik Real-Time Aktif (Belum Ada Log Pesan)
               </span>
               <span className="text-[11px] text-slate-500">
-                Kirim pesan uji coba via Simulator atau klik tombol hijau <strong>"Demo: Kirim Jam 06:00 Sekarang"</strong> di atas.
+                Kirim pesan uji coba via menu <strong>Simulator Chat WA</strong> untuk melihat simulasi alur pesan.
               </span>
             </div>
           )}

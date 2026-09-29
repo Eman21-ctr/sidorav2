@@ -1,8 +1,8 @@
-import { Activity, Radio, HelpCircle, Send, Users, Calendar, MessageSquare, Smartphone, FileBarChart2, Settings2, BellRing, Clock, Sparkles } from 'lucide-react';
+import { Activity, Radio, HelpCircle, Send, Users, Calendar, MessageSquare, Smartphone, FileBarChart2, Settings2, BellRing, Clock, Sparkles, ClipboardEdit } from 'lucide-react';
 import { BSPConfig } from '../types';
 import { SidoraLogo } from './SidoraLogo';
 
-export type NavTab = 'dashboard' | 'pasien' | 'otomasi' | 'simulator' | 'laporan';
+export type NavTab = 'dashboard' | 'manual_dashboard' | 'pasien' | 'otomasi' | 'simulator' | 'laporan';
 
 interface NavbarProps {
   currentTab: NavTab;
@@ -25,18 +25,14 @@ export const Navbar = ({
   unreadRepliesCount,
   pendingQueueCount,
 }: NavbarProps) => {
-  // The 3 simplified main tabs as requested by the user
+  // Main tabs
   const primaryTabs = [
     { id: 'dashboard' as NavTab, label: 'Dasbor Utama', icon: Activity },
+    { id: 'manual_dashboard' as NavTab, label: 'Dasbor Entri Manual', icon: ClipboardEdit },
     { id: 'pasien' as NavTab, label: 'Data Pasien & Caregiver', icon: Users },
-    { 
-      id: 'otomasi' as NavTab, 
-      label: 'Setting Pesan Otomatis', 
-      icon: BellRing,
-      badge: isAutomationActive ? '🟢 Otomatis Aktif' : 'Dijeda',
-      badgeColor: isAutomationActive ? 'bg-emerald-600' : 'bg-amber-600'
-    },
+    { id: 'otomasi' as NavTab, label: 'Setting Pesan Otomatis', icon: BellRing },
   ];
+
 
   // Secondary tools for presentation/audit
   const secondaryTabs = [
@@ -61,37 +57,6 @@ export const Navbar = ({
             title="Kembali ke Dasbor Utama"
           >
             <SidoraLogo size="md" />
-          </div>
-
-          {/* Center/Right controls */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Live Automation Status Pill */}
-            <div 
-              onClick={() => onSelectTab('otomasi')}
-              className="cursor-pointer hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
-              title="Klik untuk membuka menu Setting Pesan Otomatis"
-            >
-              <span className={`w-2 h-2 rounded-full ${isAutomationActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-              <div className="text-left leading-none">
-                <span className="text-[10px] text-slate-400 block font-semibold">Jadwal Pengiriman</span>
-                <span className="font-bold text-slate-800">
-                  {isAutomationActive ? 'Tiap Hari 06:00 & H-3' : 'Otomasi Dijeda'}
-                </span>
-              </div>
-            </div>
-
-
-
-            {/* Fast Trigger Button for Demo Presentation */}
-            <button
-              onClick={onTriggerQuickSend}
-              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-xs transition-all"
-              title="Simulasikan eksekusi pengiriman otomatis jam 06:00 pagi sekarang juga untuk keperluan demo/presentasi"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
-              <span className="hidden sm:inline">Demo: Kirim Jam 06:00</span>
-              <span className="sm:hidden">Demo Kirim</span>
-            </button>
           </div>
         </div>
       </div>

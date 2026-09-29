@@ -7,8 +7,6 @@ import {
   ExternalLink, 
   Sparkles,
   Bot,
-  Radio,
-  Zap,
   CheckCircle2,
   Info
 } from 'lucide-react';
@@ -45,9 +43,6 @@ export const WhatsAppSimulator = ({
   const [isCustomTemplate, setIsCustomTemplate] = useState(false);
   const [customMessageBody, setCustomMessageBody] = useState('');
   const [simulatedReplyText, setSimulatedReplyText] = useState('');
-
-  // Live Gateway API test feedback
-  const [gatewayStatus, setGatewayStatus] = useState<{ active: boolean; message: string; success: boolean } | null>(null);
 
   const activePatient = patients.find(p => p.id === selectedPatientId) || patients[0];
   const activeTemplate = templates.find(t => t.id === selectedTemplateId) || templates[0];
@@ -117,25 +112,6 @@ export const WhatsAppSimulator = ({
     const phoneWithCountry = rawPhone.startsWith('0') ? '62' + rawPhone.slice(1) : rawPhone;
     const textEncoded = encodeURIComponent(messageToSend);
     window.open(`https://wa.me/${phoneWithCountry}?text=${textEncoded}`, '_blank');
-  };
-
-  // Simulate calling the live BSP gateway API
-  const handleTriggerGatewayAPI = () => {
-    setGatewayStatus({
-      active: true,
-      success: true,
-      message: `Mengirim pesan via gateway ${bspConfig.providerName.toUpperCase()} dari ${bspConfig.senderNumber || 'Admin RSJ'} ke ${currentRecipientPhone}...`,
-    });
-
-    setTimeout(() => {
-      handleSendToSimulator();
-      setGatewayStatus({
-        active: false,
-        success: true,
-        message: `Berhasil terkirim! Gateway ${bspConfig.providerName.toUpperCase()} merespons HTTP 200 OK. Pesan diterima oleh ${currentRecipientPhone}.`,
-      });
-      setTimeout(() => setGatewayStatus(null), 4000);
-    }, 900);
   };
 
   // Handle simulated patient / caregiver reply
@@ -329,18 +305,8 @@ export const WhatsAppSimulator = ({
               )}
             </div>
 
-            {/* Gateway API Status Banner */}
-            {gatewayStatus && (
-              <div className={`p-2.5 rounded-xl text-xs flex items-center gap-2 animate-in fade-in duration-150 ${
-                gatewayStatus.active ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-              }`}>
-                <Radio className={`w-3.5 h-3.5 ${gatewayStatus.active ? 'animate-spin' : ''}`} />
-                <span>{gatewayStatus.message}</span>
-              </div>
-            )}
-
             {/* ACTION BUTTONS */}
-            <div className="space-y-2 pt-1">
+            <div className="pt-1">
               <div className="grid grid-cols-2 gap-2">
                 {/* 1. Kirim ke Simulator */}
                 <button
@@ -363,16 +329,6 @@ export const WhatsAppSimulator = ({
                   Buka di WA Asli (wa.me)
                 </button>
               </div>
-
-              {/* 3. Tembak via Gateway API BSP */}
-              <button
-                type="button"
-                onClick={handleTriggerGatewayAPI}
-                className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-              >
-                <Zap className="w-3.5 h-3.5 text-emerald-400" />
-                Uji Tembak Gateway API ({bspConfig.providerName.toUpperCase()})
-              </button>
             </div>
           </div>
         </div>

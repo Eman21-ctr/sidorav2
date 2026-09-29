@@ -59,6 +59,14 @@ CREATE TABLE IF NOT EXISTS tester_contacts (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 8. Tabel Rekam Statistik Dasbor Manual (Pengiriman Pesan Manual Harian)
+CREATE TABLE IF NOT EXISTS manual_daily_records (
+  date TEXT PRIMARY KEY,
+  data JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ============================================================
 -- INDEX untuk performa query
 -- ============================================================
@@ -81,6 +89,7 @@ ALTER TABLE automation_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bsp_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE daily_analytics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tester_contacts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE manual_daily_records ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Allow all operations for anon/authenticated (prototype mode)
 CREATE POLICY "Allow all for prototype" ON patients FOR ALL USING (true) WITH CHECK (true);
@@ -90,7 +99,9 @@ CREATE POLICY "Allow all for prototype" ON automation_settings FOR ALL USING (tr
 CREATE POLICY "Allow all for prototype" ON bsp_config FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for prototype" ON daily_analytics FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for prototype" ON tester_contacts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for prototype" ON manual_daily_records FOR ALL USING (true) WITH CHECK (true);
 
 -- ============================================================
 -- DONE! Tabel siap digunakan.
 -- ============================================================
+

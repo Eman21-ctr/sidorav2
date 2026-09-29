@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { AutomationSettings, BSPConfig, DailyAnalytics } from '../types';
+import { AutomationSettings, BSPConfig, DailyAnalytics, ManualStats } from '../types';
 
 // ============================================================
 // AUTOMATION SETTINGS (Singleton)
@@ -124,5 +124,36 @@ export async function deleteAllAnalytics(): Promise<void> {
   if (error) throw error;
 }
 
+// ============================================================
+// MANUAL STATS (Singleton — stored in automation_settings table)
+// ============================================================
 
+export async function fetchManualStats(): Promise<ManualStats | null> {
+  if (!isSupabaseConfigured) return null;
 
+  const { data, error } = await supabase
+    .from('automation_settings')
+    .select('data')
+    .eq('id', 'manual_stats')
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
+  return data?.data as ManualStats ?? null;
+}
+
+export async function saveManualStats(stats: ManualStats): Promise<void> {
+  if (!isSupabaseConfigured) return;
+
+  const { error } = await supabase
+    .from('automation_settings')
+    .upsert({
+      id: 'manual_stats',
+      data: stats,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'id' });
+
+  if (error) throw error;
+}

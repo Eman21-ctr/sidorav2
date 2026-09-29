@@ -4,6 +4,7 @@ import {
   NavTab 
 } from './components/Navbar';
 import { DashboardOverview } from './components/DashboardOverview';
+import { ManualDashboard } from './components/ManualDashboard';
 import { PatientManagement } from './components/PatientManagement';
 import { UnifiedMessageAutomation } from './components/UnifiedMessageAutomation';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
@@ -602,6 +603,11 @@ export default function App() {
             onOpenSimulatorForPatient={handleOpenSimulatorForPatient}
             onTriggerAutoSend={handleTriggerQuickSend}
           />
+        )}
+
+        {/* 1.5. Dasbor Entri Pengiriman Manual */}
+        {currentTab === 'manual_dashboard' && (
+          <ManualDashboard />
         )}
 
         {/* 2. Data Pasien & Caregiver */}
