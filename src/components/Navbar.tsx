@@ -2,7 +2,7 @@ import { Activity, Radio, HelpCircle, Send, Users, Calendar, MessageSquare, Smar
 import { BSPConfig } from '../types';
 import { SidoraLogo } from './SidoraLogo';
 
-export type NavTab = 'dashboard' | 'manual_dashboard' | 'pasien' | 'otomasi' | 'simulator' | 'laporan';
+export type NavTab = 'dashboard' | 'manual_dashboard' | 'pasien' | 'otomasi' | 'kirim_pesan' | 'simulator' | 'laporan';
 
 interface NavbarProps {
   currentTab: NavTab;
@@ -13,6 +13,7 @@ interface NavbarProps {
   onTriggerQuickSend: () => void;
   unreadRepliesCount: number;
   pendingQueueCount: number;
+  pendingSendCount?: number; // jumlah pesan hari ini yang belum dikirim
 }
 
 export const Navbar = ({
@@ -24,6 +25,7 @@ export const Navbar = ({
   onTriggerQuickSend,
   unreadRepliesCount,
   pendingQueueCount,
+  pendingSendCount,
 }: NavbarProps) => {
   // Main tabs
   const primaryTabs = [
@@ -31,6 +33,13 @@ export const Navbar = ({
     { id: 'manual_dashboard' as NavTab, label: 'Dasbor Entri Manual', icon: ClipboardEdit },
     { id: 'pasien' as NavTab, label: 'Data Pasien & Caregiver', icon: Users },
     { id: 'otomasi' as NavTab, label: 'Setting Pesan Otomatis', icon: BellRing },
+    {
+      id: 'kirim_pesan' as NavTab,
+      label: 'Kirim Pesan',
+      icon: Send,
+      badge: pendingSendCount && pendingSendCount > 0 ? `${pendingSendCount} pending` : undefined,
+      badgeColor: 'bg-amber-500',
+    },
   ];
 
 

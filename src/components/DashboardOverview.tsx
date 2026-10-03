@@ -431,7 +431,7 @@ export const DashboardOverview = ({
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="flex items-center gap-1.5 font-semibold text-slate-700">
                     <RefreshCw className="w-3.5 h-3.5 text-teal-600" />
-                    Iterasi Resep Farmasi
+                    Jadwal Iter
                   </span>
                   <span className="font-bold text-slate-900">
                     {countIter} <span className="text-slate-400 font-normal">({totalSent > 0 ? Math.round((countIter/totalCategory)*100) : 0}%)</span>
@@ -499,8 +499,8 @@ export const DashboardOverview = ({
               </h3>
               <p className="text-xs text-slate-500">
                 {patientsDueToday.length > 0 
-                  ? 'Pasien yang terjadwal kontrol hari ini atau pengambilan obat iterasi farmasi'
-                  : 'Monitoring jadwal kontrol rawat jalan dan iterasi resep farmasi'}
+                  ? 'Pasien yang terjadwal kontrol hari ini atau Jadwal Iter pengambilan obat'
+                  : 'Monitoring jadwal kontrol rawat jalan dan Jadwal Iter'}
               </p>
             </div>
             <button

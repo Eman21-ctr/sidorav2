@@ -123,7 +123,28 @@ export function useSupabaseData(): SupabaseDataState {
 
       // Use data from Supabase
       setPatients(dbPatients);
-      if (dbTemplates.length > 0) setTemplates(dbTemplates);
+      if (dbTemplates.length > 0) {
+        // Check if templates need upgrade (e.g. still generic without {nama_pasien} or missing siang/malam)
+        const hasMissingObatTemplates = !dbTemplates.some(t => t.id === 'tmpl-obat-siang') || !dbTemplates.some(t => t.id === 'tmpl-obat-malam');
+        const hasOldGenericObat = dbTemplates.some(t => t.category === 'minum_obat' && !t.templateText.includes('{nama_pasien}'));
+        const hasOldGenericKontrol = dbTemplates.some(t => t.category === 'kontrol_dokter' && !t.templateText.includes('{nama_pasien}'));
+        const hasOldGenericIter = dbTemplates.some(t => t.id === 'tmpl-iter-resep' && !t.templateText.includes('{ketentuan_kehadiran_iter}'));
+
+        if (hasMissingObatTemplates || hasOldGenericObat || hasOldGenericKontrol || hasOldGenericIter) {
+          console.log('[Supabase] Mengupgrade template ke format spesifik database pasien & Jadwal Iter...');
+          const upgradedTemplates = INITIAL_TEMPLATES.map(initTmpl => {
+            const existing = dbTemplates.find(t => t.id === initTmpl.id);
+            if (!existing) return initTmpl;
+            if (initTmpl.id === 'tmpl-iter-resep' && !existing.templateText.includes('{ketentuan_kehadiran_iter}')) return initTmpl;
+            if (!existing.templateText.includes('{nama_pasien}')) return initTmpl;
+            return existing;
+          });
+          setTemplates(upgradedTemplates);
+          upsertTemplates(upgradedTemplates).catch(e => console.error('[Supabase] Gagal upsert upgraded templates:', e));
+        } else {
+          setTemplates(dbTemplates);
+        }
+      }
       setMessages(dbMessages);
       if (dbAutomation) setAutomationSettings(dbAutomation);
       if (dbBsp) setBspConfig(dbBsp);

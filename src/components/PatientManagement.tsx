@@ -270,7 +270,7 @@ export const PatientManagement = ({
             Manajemen Profil Pasien RSJ &amp; Caregiver
           </h2>
           <p className="text-xs text-slate-500">
-            Kelola data rekam medis, kontak keluarga, jadwal obat harian, kontrol dokter, dan iterasi resep farmasi.
+            Kelola data rekam medis, kontak keluarga, jadwal obat harian, kontrol dokter, dan Jadwal Iter farmasi.
           </p>
         </div>
 
@@ -447,7 +447,7 @@ export const PatientManagement = ({
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500 flex items-center gap-1">
                       <RefreshCw className="w-3.5 h-3.5 text-teal-500" />
-                      Jadwal Iter Resep:
+                      Jadwal Iter:
                     </span>
                     <span className="font-medium text-teal-800">
                       {patient.jadwalIter.adaIter 
@@ -592,7 +592,7 @@ export const PatientManagement = ({
                     {isEditing ? 'Edit Profil Pasien & Pengaturan Notifikasi' : 'Tambah Pasien Baru RSJ'}
                   </h3>
                   <p className="text-xs text-slate-300">
-                    Konfigurasi kontak, jadwal minum obat, tanggal kontrol Sp.KJ, dan iterasi resep.
+                    Konfigurasi kontak, jadwal minum obat, tanggal kontrol Sp.KJ, dan Jadwal Iter.
                   </p>
                 </div>
               </div>
@@ -929,12 +929,12 @@ export const PatientManagement = ({
                   </div>
                 </div>
 
-                {/* Iter Resep Farmasi */}
+                {/* Jadwal Iter */}
                 <div className="p-4 rounded-xl border border-teal-200 bg-teal-50/40 space-y-3">
                   <div className="flex items-center justify-between">
                     <h5 className="font-bold text-teal-900 text-xs flex items-center gap-1.5">
                       <RefreshCw className="w-4 h-4 text-teal-600" />
-                      Jadwal Iterasi Resep Farmasi
+                      Jadwal Iter
                     </h5>
                     <label className="flex items-center gap-1 text-[11px] text-teal-900 font-semibold cursor-pointer">
                       <input
@@ -945,12 +945,20 @@ export const PatientManagement = ({
                           jadwalIter: { ...formData.jadwalIter!, adaIter: e.target.checked }
                         })}
                       />
-                      Ada Resep Iter
+                      Ada Jadwal Iter
                     </label>
                   </div>
 
                   {formData.jadwalIter?.adaIter && (
                     <>
+                      {/* Aturan RSJ untuk Jadwal Iter */}
+                      <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-900 space-y-1">
+                        <span className="font-bold block text-amber-950">📌 Ketentuan Pengambilan Jadwal Iter:</span>
+                        <p className="leading-snug">• <strong>Wajib tepat tanggal:</strong> Tidak boleh lebih awal atau terlambat.</p>
+                        <p className="leading-snug">• <strong>Iter 1 & 2:</strong> Boleh diwakili keluarga/caregiver.</p>
+                        <p className="leading-snug">• <strong>Iter 3:</strong> <strong className="text-amber-950">Wajib bersama pasien</strong> (evaluasi dokter & pembaharuan resep).</p>
+                      </div>
+
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-700 mb-1">No. Salinan Resep</label>
@@ -966,7 +974,7 @@ export const PatientManagement = ({
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 mb-1">Tgl Ambil Obat</label>
+                          <label className="block text-[11px] font-semibold text-slate-700 mb-1">Tgl Ambil Obat (Wajib Tepat)</label>
                           <input
                             type="date"
                             value={formData.jadwalIter?.tanggalIter || ''}
@@ -974,7 +982,7 @@ export const PatientManagement = ({
                               ...formData,
                               jadwalIter: { ...formData.jadwalIter!, tanggalIter: e.target.value }
                             })}
-                            className="w-full px-3 py-1.5 rounded-lg border border-teal-200 bg-white text-xs"
+                            className="w-full px-3 py-1.5 rounded-lg border border-teal-200 bg-white text-xs font-bold text-slate-800"
                           />
                         </div>
                       </div>
@@ -1004,12 +1012,282 @@ export const PatientManagement = ({
                           />
                         </div>
                       </div>
+
+                      {/* Status iter saat ini */}
+                      {(() => {
+                        const total = formData.jadwalIter?.totalIterasi || 3;
+                        const sisa = formData.jadwalIter?.sisaIterasi ?? 1;
+                        const currentIter = Math.max(1, total - sisa + 1);
+                        const isIter3 = currentIter >= 3;
+                        return (
+                          <div className={`p-2 rounded-lg text-[11px] font-semibold flex items-center justify-between border ${
+                            isIter3 
+                              ? 'bg-rose-50 text-rose-800 border-rose-200' 
+                              : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                          }`}>
+                            <span>Status: Pengambilan Iter ke-{currentIter}</span>
+                            <span>{isIter3 ? '⚠️ Wajib Hadir Bersama Pasien' : '✅ Boleh Diwakili Caregiver'}</span>
+                          </div>
+                        );
+                      })()}
                     </>
                   )}
                 </div>
               </div>
 
-              {/* Section 5: Status Pengawasan & Otomasi WhatsApp RSJ */}
+              {/* Section 4b: Jadwal Kontrol & Iter Multiple (RSJ Naimata: hingga 3x per periode) */}
+              <div className="space-y-4">
+                <h4 className="font-bold text-slate-900 text-sm pb-1 border-b border-slate-100 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-bold">4b</span>
+                  Jadwal Kontrol & Iter Multiple (RSJ Naimata)
+                  <span className="text-[11px] font-normal text-slate-500 ml-1">— Atur hingga 3 jadwal kontrol & 3 iter per periode resep</span>
+                </h4>
+
+                {/* ─── Jadwal Kontrol List ─── */}
+                <div className="p-4 rounded-xl border border-purple-200 bg-purple-50/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-bold text-purple-900 text-xs flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-purple-600" />
+                      Daftar Jadwal Kontrol Dokter (Maks 3)
+                    </h5>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const list = formData.jadwalKontrolList || [];
+                        if (list.length >= 3) return;
+                        setFormData({
+                          ...formData,
+                          jadwalKontrolList: [
+                            ...list,
+                            {
+                              id: `ktrl-${Date.now()}`,
+                              tanggal: '',
+                              jam: '09:00',
+                              label: `Kontrol ${list.length + 1}`,
+                            },
+                          ],
+                        });
+                      }}
+                      disabled={(formData.jadwalKontrolList || []).length >= 3}
+                      className="text-xs font-semibold text-purple-700 hover:text-purple-900 flex items-center gap-1 disabled:opacity-40"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Tambah Jadwal Kontrol
+                    </button>
+                  </div>
+
+                  <div className="text-[11px] text-purple-800 bg-purple-50 p-2 rounded-lg border border-purple-100">
+                    💡 RSJ Naimata: Biasanya ada 3 jadwal kontrol per periode resep (sebulan sekali).
+                    Sistem akan mengirim pengingat pada <strong>H-3</strong>, <strong>H-1</strong>, dan <strong>Hari H</strong> untuk setiap jadwal.
+                  </div>
+
+                  {(formData.jadwalKontrolList || []).length === 0 && (
+                    <div className="text-[11px] text-slate-500 italic py-2 text-center">
+                      Belum ada jadwal kontrol tambahan. Klik "Tambah Jadwal Kontrol" untuk menambahkan.
+                      (Jika tidak diisi, sistem akan pakai tanggal kontrol dari Section 4.)
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    {(formData.jadwalKontrolList || []).map((jadwal, idx) => (
+                      <div key={jadwal.id} className="flex items-center gap-2 bg-white p-2.5 rounded-lg border border-purple-200">
+                        <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-800 text-[11px] font-bold flex items-center justify-center shrink-0">
+                          {idx + 1}
+                        </div>
+                        <div className="flex-1 grid grid-cols-3 gap-2">
+                          <div>
+                            <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Label</label>
+                            <input
+                              type="text"
+                              placeholder={`Kontrol ${idx + 1}`}
+                              value={jadwal.label || ''}
+                              onChange={(e) => {
+                                const updated = [...(formData.jadwalKontrolList || [])];
+                                updated[idx] = { ...updated[idx], label: e.target.value };
+                                setFormData({ ...formData, jadwalKontrolList: updated });
+                              }}
+                              className="w-full px-2 py-1 rounded-lg border border-purple-200 bg-white text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Tanggal Kontrol *</label>
+                            <input
+                              type="date"
+                              value={jadwal.tanggal}
+                              onChange={(e) => {
+                                const updated = [...(formData.jadwalKontrolList || [])];
+                                updated[idx] = { ...updated[idx], tanggal: e.target.value };
+                                setFormData({ ...formData, jadwalKontrolList: updated });
+                              }}
+                              className="w-full px-2 py-1 rounded-lg border border-purple-200 bg-white text-xs font-bold text-slate-800"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Jam Praktek</label>
+                            <input
+                              type="text"
+                              placeholder="09:00"
+                              value={jadwal.jam}
+                              onChange={(e) => {
+                                const updated = [...(formData.jadwalKontrolList || [])];
+                                updated[idx] = { ...updated[idx], jam: e.target.value };
+                                setFormData({ ...formData, jadwalKontrolList: updated });
+                              }}
+                              className="w-full px-2 py-1 rounded-lg border border-purple-200 bg-white text-xs"
+                            />
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = (formData.jadwalKontrolList || []).filter((_, i) => i !== idx);
+                            setFormData({ ...formData, jadwalKontrolList: updated });
+                          }}
+                          className="text-slate-400 hover:text-red-600 p-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ─── Jadwal Iter List ─── */}
+                {formData.jadwalIter?.adaIter && (
+                  <div className="p-4 rounded-xl border border-teal-200 bg-teal-50/30 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-bold text-teal-900 text-xs flex items-center gap-1.5">
+                        <RefreshCw className="w-4 h-4 text-teal-600" />
+                        Daftar Jadwal Iter (Maks 3: Iter 1, 2, 3)
+                      </h5>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const list = formData.jadwalIterList || [];
+                          if (list.length >= 3) return;
+                          const nextNomor = list.length + 1;
+                          setFormData({
+                            ...formData,
+                            jadwalIterList: [
+                              ...list,
+                              {
+                                id: `iter-${nextNomor}`,
+                                nomorIter: nextNomor,
+                                tanggal: '',
+                                nomorResep: formData.jadwalIter?.nomorResep || '',
+                                statusPengambilan: 'belum_diambil' as const,
+                                label: `Iter ${nextNomor}`,
+                              },
+                            ],
+                          });
+                        }}
+                        disabled={(formData.jadwalIterList || []).length >= 3}
+                        className="text-xs font-semibold text-teal-700 hover:text-teal-900 flex items-center gap-1 disabled:opacity-40"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Tambah Jadwal Iter
+                      </button>
+                    </div>
+
+                    <div className="text-[11px] text-teal-800 bg-teal-50 p-2 rounded-lg border border-teal-100 space-y-0.5">
+                      <p>• <strong>Iter 1 & 2:</strong> Boleh diwakili keluarga/caregiver</p>
+                      <p>• <strong>Iter 3:</strong> ⚠️ Wajib bersama pasien (evaluasi dokter & pembaharuan resep)</p>
+                      <p>• Sistem mengirim pengingat pada <strong>H-3, H-1, dan Hari H</strong> setiap iter</p>
+                    </div>
+
+                    {(formData.jadwalIterList || []).length === 0 && (
+                      <div className="text-[11px] text-slate-500 italic py-2 text-center">
+                        Belum ada jadwal iter tambahan. (Jika tidak diisi, sistem pakai tanggal iter dari Section 4.)
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      {(formData.jadwalIterList || []).map((iter, idx) => {
+                        const isIter3 = iter.nomorIter >= 3;
+                        return (
+                          <div
+                            key={iter.id}
+                            className={`flex items-center gap-2 p-2.5 rounded-lg border ${
+                              isIter3
+                                ? 'bg-rose-50 border-rose-200'
+                                : 'bg-white border-teal-200'
+                            }`}
+                          >
+                            <div
+                              className={`w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 ${
+                                isIter3 ? 'bg-rose-100 text-rose-800' : 'bg-teal-100 text-teal-800'
+                              }`}
+                            >
+                              {iter.nomorIter}
+                            </div>
+                            <div className="flex-1 grid grid-cols-3 gap-2">
+                              <div>
+                                <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Label</label>
+                                <input
+                                  type="text"
+                                  value={iter.label || ''}
+                                  onChange={(e) => {
+                                    const updated = [...(formData.jadwalIterList || [])];
+                                    updated[idx] = { ...updated[idx], label: e.target.value };
+                                    setFormData({ ...formData, jadwalIterList: updated });
+                                  }}
+                                  placeholder={`Iter ${iter.nomorIter}`}
+                                  className="w-full px-2 py-1 rounded-lg border border-teal-200 bg-white text-xs"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
+                                  Tanggal Iter *
+                                  {isIter3 && <span className="text-rose-600 ml-1">⚠️ Wajib Hadir Pasien</span>}
+                                </label>
+                                <input
+                                  type="date"
+                                  value={iter.tanggal}
+                                  onChange={(e) => {
+                                    const updated = [...(formData.jadwalIterList || [])];
+                                    updated[idx] = { ...updated[idx], tanggal: e.target.value };
+                                    setFormData({ ...formData, jadwalIterList: updated });
+                                  }}
+                                  className={`w-full px-2 py-1 rounded-lg border bg-white text-xs font-bold text-slate-800 ${
+                                    isIter3 ? 'border-rose-300' : 'border-teal-200'
+                                  }`}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Status Pengambilan</label>
+                                <select
+                                  value={iter.statusPengambilan}
+                                  onChange={(e) => {
+                                    const updated = [...(formData.jadwalIterList || [])];
+                                    updated[idx] = {
+                                      ...updated[idx],
+                                      statusPengambilan: e.target.value as any,
+                                    };
+                                    setFormData({ ...formData, jadwalIterList: updated });
+                                  }}
+                                  className="w-full px-2 py-1 rounded-lg border border-teal-200 bg-white text-xs"
+                                >
+                                  <option value="belum_diambil">⏳ Belum Diambil</option>
+                                  <option value="sudah_diambil">✅ Sudah Diambil</option>
+                                </select>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = (formData.jadwalIterList || []).filter((_, i) => i !== idx);
+                                setFormData({ ...formData, jadwalIterList: updated });
+                              }}
+                              className="text-slate-400 hover:text-red-600 p-1"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm pb-1 border-b border-slate-200 flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-bold">5</span>

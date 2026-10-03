@@ -1209,7 +1209,7 @@ export const ManualDashboard = () => {
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="flex items-center gap-1.5 font-semibold text-slate-700">
                     <RefreshCw className="w-3.5 h-3.5 text-teal-600" />
-                    Iterasi Resep Farmasi
+                    Jadwal Iter
                   </span>
                   <span className="font-bold text-slate-900">
                     {displayedMetrics.kategoriIter}{' '}

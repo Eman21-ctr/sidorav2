@@ -46,13 +46,16 @@ export function generatePersonalizedMessage(
         : (patient.jenisKelamin === 'L' ? `Bapak ${patient.nama}` : `Ibu ${patient.nama}`)));
 
   // Medications list by time
-  const time = options?.timeOfDay || 'pagi';
+  const inferredTime: 'pagi' | 'siang' | 'malam' =
+    template.id === 'tmpl-obat-siang' || template.kode === 'OBAT_SIANG' ? 'siang' :
+    template.id === 'tmpl-obat-malam' || template.kode === 'OBAT_MALAM' ? 'malam' : 'pagi';
+  const time = options?.timeOfDay || inferredTime;
   const medsForTime = patient.obatRutin.filter(m => m.waktuMinum.includes(time));
   const medsListStr = medsForTime.length > 0 
     ? medsForTime.map(m => `${m.namaObat} ${m.dosis} (${m.aturanPakai})`).join(', ')
     : patient.obatRutin.map(m => `${m.namaObat} ${m.dosis}`).join(', ');
 
-  const jamMinum = patient.jamMinumObat[time] || '07:00';
+  const jamMinum = patient.jamMinumObat[time] || (time === 'pagi' ? '07:00' : time === 'siang' ? '12:30' : '20:00');
 
   let text = template.templateText;
 
@@ -62,9 +65,21 @@ export function generatePersonalizedMessage(
     '{hubungan_caregiver}': patient.caregiver.hubungan,
     '{nama_panggilan}': panggilan,
     '{nomor_rm}': patient.noRM,
-    '{daftar_obat_pagi}': patient.obatRutin.filter(m => m.waktuMinum.includes('pagi')).map(m => `${m.namaObat} ${m.dosis}`).join(', ') || 'Sesuai petunjuk etiket obat',
-    '{daftar_obat_siang}': patient.obatRutin.filter(m => m.waktuMinum.includes('siang')).map(m => `${m.namaObat} ${m.dosis}`).join(', ') || 'Sesuai petunjuk etiket obat',
-    '{daftar_obat_malam}': patient.obatRutin.filter(m => m.waktuMinum.includes('malam')).map(m => `${m.namaObat} ${m.dosis}`).join(', ') || 'Sesuai petunjuk etiket obat',
+    '{daftar_obat_pagi}': (() => {
+      const meds = patient.obatRutin.filter(m => m.waktuMinum.includes('pagi'));
+      if (meds.length === 0) return 'Tidak ada obat pagi (sesuai petunjuk dokter)';
+      return meds.map(m => `• ${m.namaObat} ${m.dosis} – ${m.aturanPakai}`).join('\n');
+    })(),
+    '{daftar_obat_siang}': (() => {
+      const meds = patient.obatRutin.filter(m => m.waktuMinum.includes('siang'));
+      if (meds.length === 0) return 'Tidak ada obat siang (sesuai petunjuk dokter)';
+      return meds.map(m => `• ${m.namaObat} ${m.dosis} – ${m.aturanPakai}`).join('\n');
+    })(),
+    '{daftar_obat_malam}': (() => {
+      const meds = patient.obatRutin.filter(m => m.waktuMinum.includes('malam'));
+      if (meds.length === 0) return 'Tidak ada obat malam (sesuai petunjuk dokter)';
+      return meds.map(m => `• ${m.namaObat} ${m.dosis} – ${m.aturanPakai}`).join('\n');
+    })(),
     '{jam_minum}': `${jamMinum} WIB`,
     '{tanggal_kontrol}': formatIndonesianDate(patient.jadwalKontrol.tanggal),
     '{jam_kontrol}': patient.jadwalKontrol.jam,
@@ -73,6 +88,44 @@ export function generatePersonalizedMessage(
     '{nomor_resep}': patient.jadwalIter.nomorResep,
     '{tanggal_iter}': formatIndonesianDate(patient.jadwalIter.tanggalIter),
     '{sisa_iter}': `${patient.jadwalIter.sisaIterasi}x dari total ${patient.jadwalIter.totalIterasi}x pengulangan`,
+    '{iter_ke}': (() => {
+      const totalIter = patient.jadwalIter.totalIterasi || 3;
+      const sisaIter = patient.jadwalIter.sisaIterasi || 1;
+      const iterKe = Math.max(1, totalIter - sisaIter + 1);
+      return `Iter ke-${iterKe}`;
+    })(),
+    '{ketentuan_kehadiran_iter}': (() => {
+      const totalIter = patient.jadwalIter.totalIterasi || 3;
+      const sisaIter = patient.jadwalIter.sisaIterasi || 1;
+      const iterKe = Math.max(1, totalIter - sisaIter + 1);
+      const isIter3OrMore = iterKe >= 3;
+      if (isIter3OrMore) {
+        return `⚠️ *WAJIB BERSAMA PASIEN:* Pada jadwal iter ke-${iterKe} ini, pasien Sdr/i *${patient.nama} WAJIB hadir langsung* ke RSJ untuk pemeriksaan/evaluasi dokter dan pembaharuan resep (TIDAK BOLEH diwakilkan).`;
+      }
+      const catatanIter3 = ` _(Catatan: Iter ke-3 berikutnya wajib bersama pasien langsung.)_`;
+      return `✅ *BOLEH DIWAKILI:* Jadwal iter ke-${iterKe} ini *boleh diwakili* oleh keluarga/caregiver dengan membawa kartu berobat dan copy resep asli.${catatanIter3}`;
+    })(),
+    '{ketentuan_tanggal_iter}': `🗓 *WAJIB TEPAT TANGGAL:* Pengambilan obat *HARUS tepat pada tanggal yang ditentukan (${formatIndonesianDate(patient.jadwalIter.tanggalIter)})*. Tidak boleh diambil lebih awal atau terlambat.`,
+    '{aturan_jadwal_iter}': (() => {
+      const totalIter = patient.jadwalIter.totalIterasi || 3;
+      const sisaIter = patient.jadwalIter.sisaIterasi || 1;
+      const iterKe = Math.max(1, totalIter - sisaIter + 1);
+      const isIter3OrMore = iterKe >= 3;
+      const kehadiran = isIter3OrMore
+        ? `⚠️ *WAJIB BERSAMA PASIEN:* Pasien *${patient.nama} WAJIB hadir langsung* ke RSJ untuk evaluasi dokter (tidak boleh diwakilkan).`
+        : `✅ *BOLEH DIWAKILI:* Jadwal iter ke-${iterKe} ini boleh diwakili oleh keluarga/caregiver.`;
+      return `1. 🗓 *Wajib Tepat Tanggal:* Obat HARUS diambil tepat pada tanggal *${formatIndonesianDate(patient.jadwalIter.tanggalIter)}* (tidak boleh lebih awal atau terlambat).\n2. 👥 *Ketentuan Kehadiran (Iter ke-${iterKe}):* ${kehadiran}`;
+    })(),
+    '{daftar_obat}': medsListStr,
+    '{diagnosa}': patient.diagnosaMedis || '-',
+    '{diagnosa_medis}': patient.diagnosaMedis || '-',
+    '{alamat}': patient.alamat || '-',
+    '{usia}': `${patient.usia} tahun`,
+    '{jam_minum_pagi}': `${patient.jamMinumObat.pagi || '07:00'} WIB`,
+    '{jam_minum_siang}': `${patient.jamMinumObat.siang || '12:30'} WIB`,
+    '{jam_minum_malam}': `${patient.jamMinumObat.malam || '20:00'} WIB`,
+    '{dokter_kontrol}': patient.jadwalKontrol.dokter || patient.dokterDPJP,
+    '{poli_kontrol}': patient.jadwalKontrol.poli || patient.poliklinik,
     '{hotline_rsj}': RSJ_INFO.hotlineWA,
     '{nama_rsj}': RSJ_INFO.nama,
   };
@@ -116,7 +169,7 @@ export function exportMessagesToExcel(messages: WhatsAppMessage[]): void {
     m.recipientPhone,
     m.category === 'minum_obat' ? 'Minum Obat' :
     m.category === 'kontrol_dokter' ? 'Kontrol Dokter' :
-    m.category === 'iter_resep' ? 'Iterasi Resep' :
+    m.category === 'iter_resep' ? 'Jadwal Iter' :
     m.category === 'edukasi_rsj' ? 'Edukasi / Afirmasi' : m.category,
     m.title,
     m.status === 'delivered' ? 'Terkirim' :

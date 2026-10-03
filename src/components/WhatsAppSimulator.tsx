@@ -259,7 +259,7 @@ export const WhatsAppSimulator = ({
             recipientPhone,
             recipientType: targetType === 'pasien' ? 'Pasien' : 'Caregiver',
             category: 'iter_resep',
-            title: 'Pengingat Jadwal Iterasi Resep Farmasi',
+            title: 'Pengingat Jadwal Iter',
             body,
             status: simulateReadStatus ? 'read' : 'delivered',
             scheduledAt: `${todayDateStr} 06:00`,

@@ -64,6 +64,14 @@ export interface Patient {
     konfirmasiKehadiran?: 'belum_konfirmasi' | 'akan_hadir' | 'minta_reschedule';
   };
 
+  // Daftar Jadwal Kontrol Dokter Multiple (max 3 per periode resep)
+  jadwalKontrolList?: Array<{
+    id: string;       // unique id misal "ktrl-1"
+    tanggal: string;  // "YYYY-MM-DD"
+    jam: string;      // "09:00"
+    label?: string;   // Opsional: "Kontrol 1", "Kontrol 2", dst
+  }>;
+
   // Jadwal Iterasi Resep (Ambil Obat di Farmasi tanpa antre dokter)
   jadwalIter: {
     adaIter: boolean;
@@ -77,6 +85,16 @@ export interface Patient {
     };
     statusPengambilan?: 'belum_diambil' | 'sudah_diambil';
   };
+
+  // Daftar Jadwal Iter Multiple (max 3 per periode resep - iter 1, 2, 3)
+  jadwalIterList?: Array<{
+    id: string;       // "iter-1", "iter-2", "iter-3"
+    nomorIter: number; // 1, 2, 3
+    tanggal: string;   // "YYYY-MM-DD"
+    nomorResep: string;
+    statusPengambilan: 'belum_diambil' | 'sudah_diambil';
+    label?: string;    // Opsional: "Iter 1", "Iter 2", "Iter 3"
+  }>;
 
   terakhirDihubungi?: string;
   catatanKhusus?: string;
@@ -153,8 +171,9 @@ export interface AutomationSettings {
   // 1. Pengingat Minum Obat Harian
   obat: {
     enabled: boolean;
-    jamKirimPagi: string; // default "06:00"
-    jamKirimMalam: string; // default "19:30"
+    jamKirimPagi: string;   // default "06:00"
+    jamKirimSiang: string;  // default "12:00"
+    jamKirimMalam: string;  // default "19:00"
     targetPenerima: 'caregiver' | 'pasien' | 'keduanya';
   };
 
@@ -236,5 +255,28 @@ export interface ManualDailyRecord {
   petugas?: string;
   catatan?: string;
   updatedAt?: string;
+}
+
+// ============================================================
+// MANUAL SEND LOG — Tracking status pengiriman manual harian
+// ============================================================
+export interface ManualSendItem {
+  id: string;            // unique key, misal: "send-{date}-{patientId}-{category}-{session}"
+  date: string;          // "YYYY-MM-DD" — tanggal pengiriman
+  patientId: string;
+  patientName: string;
+  noRM: string;
+  recipientName: string;
+  recipientPhone: string;
+  recipientType: 'Pasien' | 'Caregiver';
+  category: ReminderCategory;
+  sessionLabel: string;  // "Obat Pagi", "Kontrol 1 (H-1)", "Iter 2", dst
+  messageBody: string;   // isi pesan yang akan dikirim
+  status: 'pending' | 'sent' | 'skipped';
+  sentAt?: string;       // timestamp saat diklik kirim/buka WA
+  skippedReason?: string;
+  // Untuk kontrol/iter: referensi jadwal
+  jadwalRef?: string;    // tanggal jadwal yang dirujuk
+  iterNomor?: number;    // 1, 2, atau 3 (untuk iter)
 }
 

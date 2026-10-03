@@ -9,6 +9,7 @@ import { PatientManagement } from './components/PatientManagement';
 import { UnifiedMessageAutomation } from './components/UnifiedMessageAutomation';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
 import { ReportsAndLogs } from './components/ReportsAndLogs';
+import { KirimPesan } from './components/KirimPesan';
 
 import { CheckCircle2, X, Sparkles, Loader2, WifiOff, CloudOff, Database } from 'lucide-react';
 
@@ -377,13 +378,34 @@ export default function App() {
         return; // Pasien ini di luar pengawasan RSJ Naimata - lewati pengiriman otomatis
       }
 
-      // 1. Minum Obat Harian (Pesan seragam jam 06:00 pagi setiap hari)
+      // 1. Minum Obat Harian (3x sehari: pagi, siang, malam)
       if (automationSettings.obat.enabled) {
-        const obatTmpl = templates.find(t => t.category === 'minum_obat') || templates[0];
+        // Tentukan sesi waktu berdasarkan jam saat ini (untuk auto) atau default pagi (untuk demo)
+        let sesi: 'pagi' | 'siang' | 'malam' = 'pagi';
+        let waktuLabel = 'Pagi';
+        let jamKirim = automationSettings.obat.jamKirimPagi;
+
+        if (source === 'auto') {
+          const now = new Date();
+          const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+          if (hhmm === automationSettings.obat.jamKirimSiang) {
+            sesi = 'siang'; waktuLabel = 'Siang'; jamKirim = automationSettings.obat.jamKirimSiang;
+          } else if (hhmm === automationSettings.obat.jamKirimMalam) {
+            sesi = 'malam'; waktuLabel = 'Malam'; jamKirim = automationSettings.obat.jamKirimMalam;
+          }
+        }
+
+        // Pilih template sesuai sesi: pagi → tmpl-obat-pagi, siang → tmpl-obat-siang, malam → tmpl-obat-malam
+        const templateId = sesi === 'pagi' ? 'tmpl-obat-pagi' : sesi === 'siang' ? 'tmpl-obat-siang' : 'tmpl-obat-malam';
+        const obatTmpl = templates.find(t => t.id === templateId)
+          || templates.find(t => t.category === 'minum_obat')
+          || templates[0];
+
         const { body, recipientName, recipientPhone } = generatePersonalizedMessage(
           obatTmpl, 
           patient, 
-          automationSettings.obat.targetPenerima === 'pasien' ? 'pasien' : 'caregiver'
+          automationSettings.obat.targetPenerima === 'pasien' ? 'pasien' : 'caregiver',
+          { timeOfDay: sesi }
         );
 
         newMessages.push({
@@ -395,9 +417,9 @@ export default function App() {
           recipientPhone,
           recipientType: automationSettings.obat.targetPenerima === 'pasien' ? 'Pasien' : 'Caregiver',
           category: 'minum_obat',
-          title: `Pengingat Minum Obat Pagi (${automationSettings.obat.jamKirimPagi} WIB)`,
+          title: `Pengingat Minum Obat ${waktuLabel} (${jamKirim} WIB)`,
           body,
-          scheduledAt: `${todayDateStr} ${automationSettings.obat.jamKirimPagi}`,
+          scheduledAt: `${todayDateStr} ${jamKirim}`,
           sentAt: nowIso,
           deliveredAt: nowIso,
           status: 'delivered',
@@ -446,7 +468,7 @@ export default function App() {
         }
       }
 
-      // 3. Jadwal Iterasi Resep (Farmasi) (H-3 s/d Hari H)
+      // 3. Jadwal Iter (H-3 s/d Hari H)
       if (automationSettings.iter.enabled && patient.jadwalIter && patient.jadwalIter.adaIter && patient.jadwalIter.tanggalIter) {
         const iterTmpl = templates.find(t => t.category === 'iter_resep') || templates[2] || templates[0];
         const iterDate = new Date(patient.jadwalIter.tanggalIter);
@@ -476,7 +498,7 @@ export default function App() {
             recipientPhone,
             recipientType: 'Caregiver',
             category: 'iter_resep',
-            title: `Pengingat Jadwal Iterasi Resep Farmasi (${tag})`,
+            title: `Pengingat Jadwal Iter (${tag})`,
             body,
             scheduledAt: `${todayDateStr} ${automationSettings.iter.jamKirim}`,
             sentAt: nowIso,
@@ -520,7 +542,7 @@ export default function App() {
       setAutoToast({
         visible: true,
         title: 'Sistem Otomasi Berhasil Mengirimkan Pesan!',
-        message: `${newMessages.length} pesan pengingat (Minum Obat jam 06:00, Kontrol Dokter H-3 s/d H-1, & Iter Farmasi) telah otomatis dikirimkan ke WhatsApp pasien & caregiver tanpa perlu klik manual harian.`,
+        message: `${newMessages.length} pesan pengingat (Minum Obat 3x sehari: ${automationSettings.obat.jamKirimPagi}, ${automationSettings.obat.jamKirimSiang}, ${automationSettings.obat.jamKirimMalam} WIB – Kontrol Dokter & Iter Farmasi) telah otomatis dikirimkan ke WhatsApp pasien & caregiver.`,
         count: newMessages.length,
       });
 
@@ -530,14 +552,20 @@ export default function App() {
     }
   }, [automationSettings, patients, templates, bspConfig, syncMessages, syncAutomationSettings, syncBSPConfig, syncSingleAnalytics]);
 
-  // Background Clock/Interval for Automated Delivery
+  // Background Clock/Interval for Automated Delivery (3x sehari: pagi, siang, malam)
   useEffect(() => {
     const timer = setInterval(() => {
       if (!automationSettings.isActive) return;
       const now = new Date();
       const currentHoursMinutes = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       
-      if (currentHoursMinutes === automationSettings.obat.jamKirimPagi) {
+      const jadwalObat = [
+        automationSettings.obat.jamKirimPagi,
+        automationSettings.obat.jamKirimSiang,
+        automationSettings.obat.jamKirimMalam,
+      ];
+
+      if (jadwalObat.includes(currentHoursMinutes)) {
         executeAutomatedBatch('auto');
       }
     }, 45000);
@@ -557,6 +585,51 @@ export default function App() {
   };
 
   const unreadRepliesCount = messages.filter(m => m.status === 'replied').length;
+
+  // Hitung estimasi jumlah pesan pending hari ini (untuk badge Kirim Pesan di navbar)
+  const todayStr = getTodayDateStr();
+  const estimatedPendingSend = (() => {
+    let count = 0;
+    patients.forEach(p => {
+      const isSupervised =
+        p.notifikasiOtomatisAktif !== false &&
+        p.statusPengawasan !== 'luar_pengawasan' &&
+        p.statusPengawasan !== 'selesai_pengobatan' &&
+        p.statusPengawasan !== 'rujuk_keluar';
+      if (!isSupervised) return;
+      // Minum obat (estimasi: 1 per sesi per pasien aktif)
+      const sesiObat = ['pagi', 'siang', 'malam'].filter(s =>
+        p.obatRutin.some(m => m.waktuMinum.includes(s as any))
+      );
+      const recipients = p.caregiver.targetPenerima === 'keduanya' ? 2 : 1;
+      count += sesiObat.length * recipients;
+      // Kontrol (estimasi: ada jadwal H-3, H-1, atau H-0 hari ini)
+      const kontrolList = p.jadwalKontrolList && p.jadwalKontrolList.length > 0
+        ? p.jadwalKontrolList
+        : [{ tanggal: p.jadwalKontrol.tanggal }];
+      kontrolList.forEach(j => {
+        if (!j.tanggal) return;
+        const d = new Date(j.tanggal + 'T00:00:00');
+        const base = new Date(todayStr + 'T00:00:00');
+        const diff = Math.round((d.getTime() - base.getTime()) / (1000 * 3600 * 24));
+        if (diff === 0 || diff === 1 || diff === 3) count++;
+      });
+      // Iter
+      if (p.jadwalIter.adaIter) {
+        const iterList = p.jadwalIterList && p.jadwalIterList.length > 0
+          ? p.jadwalIterList
+          : [{ tanggal: p.jadwalIter.tanggalIter, statusPengambilan: p.jadwalIter.statusPengambilan }];
+        iterList.forEach((it: any) => {
+          if (!it.tanggal || it.statusPengambilan === 'sudah_diambil') return;
+          const d = new Date(it.tanggal + 'T00:00:00');
+          const base = new Date(todayStr + 'T00:00:00');
+          const diff = Math.round((d.getTime() - base.getTime()) / (1000 * 3600 * 24));
+          if (diff === 0 || diff === 1 || diff === 3) count++;
+        });
+      }
+    });
+    return count;
+  })();
 
   // ============================================================
   // LOADING STATE — Full screen loader saat pertama kali load
@@ -673,6 +746,7 @@ export default function App() {
         onTriggerQuickSend={handleTriggerQuickSend}
         unreadRepliesCount={unreadRepliesCount}
         pendingQueueCount={patients.length}
+        pendingSendCount={estimatedPendingSend}
       />
 
       {/* Main Content Area */}
@@ -726,6 +800,14 @@ export default function App() {
             onTogglePatientSupervision={handleTogglePatientSupervision}
             onTriggerManualRun={() => executeAutomatedBatch('demo')}
             onNavigateToSimulator={() => setCurrentTab('simulator')}
+          />
+        )}
+
+        {/* 4. Kirim Pesan Manual Harian */}
+        {currentTab === 'kirim_pesan' && (
+          <KirimPesan
+            patients={patients}
+            templates={templates}
           />
         )}
 

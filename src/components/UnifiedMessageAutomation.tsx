@@ -20,9 +20,11 @@ import {
   AlertCircle,
   UserCheck,
   UserX,
-  ShieldAlert
+  ShieldAlert,
+  RotateCcw
 } from 'lucide-react';
 import { AutomationSettings, MessageTemplate, Patient, BSPConfig, WhatsAppMessage } from '../types';
+import { INITIAL_TEMPLATES } from '../data/initialData';
 
 interface UnifiedMessageAutomationProps {
   settings: AutomationSettings;
@@ -53,7 +55,18 @@ export const UnifiedMessageAutomation = ({
   const [currentSettings, setCurrentSettings] = useState<AutomationSettings>(settings);
   const [activeSubTab, setActiveSubTab] = useState<'jadwal' | 'template' | 'gateway'>('jadwal');
   const [selectedTemplateCategory, setSelectedTemplateCategory] = useState<'minum_obat' | 'kontrol_dokter' | 'iter_resep'>('minum_obat');
+  const [obatSubSesi, setObatSubSesi] = useState<'pagi' | 'siang' | 'malam'>('pagi');
   const [savedAlert, setSavedAlert] = useState(false);
+
+  // Tentukan template ID yang sedang aktif diedit
+  const getActiveTemplateId = (): string => {
+    if (selectedTemplateCategory === 'minum_obat') {
+      return obatSubSesi === 'pagi' ? 'tmpl-obat-pagi' : obatSubSesi === 'siang' ? 'tmpl-obat-siang' : 'tmpl-obat-malam';
+    }
+    if (selectedTemplateCategory === 'kontrol_dokter') return 'tmpl-kontrol-dokter';
+    if (selectedTemplateCategory === 'iter_resep') return 'tmpl-iter-resep';
+    return 'tmpl-obat-pagi';
+  };
 
   // Handle master toggle
   const handleToggleActive = () => {
@@ -76,17 +89,31 @@ export const UnifiedMessageAutomation = ({
     setTimeout(() => setSavedAlert(false), 3000);
   };
 
-  // Find active template for editing
-  const currentEditingTemplate = templates.find(t => t.category === selectedTemplateCategory) || templates[0];
+  // Find active template for editing based on id
+  const currentEditingTemplate = templates.find(t => t.id === getActiveTemplateId())
+    || templates.find(t => t.category === selectedTemplateCategory)
+    || templates[0];
   const [editingTemplateText, setEditingTemplateText] = useState(currentEditingTemplate?.templateText || '');
 
-  // When switching category, update editing text
+  // When switching category or sesi, update editing text
   const handleSelectTemplateCategory = (cat: 'minum_obat' | 'kontrol_dokter' | 'iter_resep') => {
     setSelectedTemplateCategory(cat);
-    const tmpl = templates.find(t => t.category === cat) || templates[0];
-    if (tmpl) {
-      setEditingTemplateText(tmpl.templateText);
+    // When switching to minum_obat, keep current sesi; otherwise find by category
+    if (cat !== 'minum_obat') {
+      const tmpl = templates.find(t => t.category === cat) || templates[0];
+      if (tmpl) setEditingTemplateText(tmpl.templateText);
+    } else {
+      const tmplId = obatSubSesi === 'pagi' ? 'tmpl-obat-pagi' : obatSubSesi === 'siang' ? 'tmpl-obat-siang' : 'tmpl-obat-malam';
+      const tmpl = templates.find(t => t.id === tmplId) || templates.find(t => t.category === 'minum_obat');
+      if (tmpl) setEditingTemplateText(tmpl.templateText);
     }
+  };
+
+  const handleSelectObatSesi = (sesi: 'pagi' | 'siang' | 'malam') => {
+    setObatSubSesi(sesi);
+    const tmplId = sesi === 'pagi' ? 'tmpl-obat-pagi' : sesi === 'siang' ? 'tmpl-obat-siang' : 'tmpl-obat-malam';
+    const tmpl = templates.find(t => t.id === tmplId) || templates.find(t => t.category === 'minum_obat');
+    if (tmpl) setEditingTemplateText(tmpl.templateText);
   };
 
   const handleSaveCurrentTemplate = () => {
@@ -97,6 +124,23 @@ export const UnifiedMessageAutomation = ({
     };
     onSaveTemplate(updated);
     triggerSaved();
+  };
+
+  const handleInsertVariable = (variableTag: string) => {
+    setEditingTemplateText(prev => prev ? `${prev} ${variableTag}` : variableTag);
+  };
+
+  const handleResetCurrentTemplate = () => {
+    if (!currentEditingTemplate) return;
+    const defaultTmpl = INITIAL_TEMPLATES.find(t => t.id === currentEditingTemplate.id);
+    if (defaultTmpl) {
+      setEditingTemplateText(defaultTmpl.templateText);
+      onSaveTemplate({
+        ...currentEditingTemplate,
+        templateText: defaultTmpl.templateText,
+      });
+      triggerSaved();
+    }
   };
 
   return (
@@ -192,7 +236,7 @@ export const UnifiedMessageAutomation = ({
             <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
             <div>
               <strong className="font-bold text-emerald-900 block text-sm">Prinsip Pengiriman Otomatis:</strong>
-              Cukup simpan konfigurasi ini 1 kali. Setiap pagi jam <strong>{currentSettings.obat.jamKirimPagi}</strong>, 
+              Cukup simpan konfigurasi ini 1 kali. Setiap hari pada jam <strong>{currentSettings.obat.jamKirimPagi}</strong>, <strong>{currentSettings.obat.jamKirimSiang}</strong>, dan <strong>{currentSettings.obat.jamKirimMalam}</strong>, 
               sistem membaca seluruh data pasien rawat jalan aktif dan langsung menyalurkan pesan pengingat ke nomor WhatsApp tujuan. 
               Anda tidak perlu menekan tombol kirim setiap hari.
             </div>
@@ -211,7 +255,7 @@ export const UnifiedMessageAutomation = ({
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm">Pengingat Minum Obat</h3>
-                    <p className="text-[11px] text-slate-500">Rutin setiap hari</p>
+                    <p className="text-[11px] text-slate-500">3x sehari (Pagi, Siang, Malam)</p>
                   </div>
                 </div>
 
@@ -230,9 +274,11 @@ export const UnifiedMessageAutomation = ({
               </div>
 
               <div className="space-y-3 pt-2 text-xs border-t border-slate-100">
+
+                {/* Jadwal Pagi */}
                 <div>
                   <label className="font-semibold text-slate-700 block mb-1">
-                    Jadwal Kirim Seragam (Setiap Pagi):
+                    🌅 Jadwal Pagi:
                   </label>
                   <div className="flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -245,20 +291,57 @@ export const UnifiedMessageAutomation = ({
                       })}
                       className="px-3 py-1.5 rounded-lg border border-slate-300 font-mono text-xs font-bold text-slate-900 focus:ring-1 focus:ring-emerald-500"
                     />
-                    <span className="text-[11px] text-slate-500 font-medium">WIB (Pukul 06:00 Pagi)</span>
+                    <span className="text-[11px] text-slate-500 font-medium">WIB</span>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
-                    Pesan pengingat minum obat dikirim seragam 1x setiap hari pada jam <strong>06:00 pagi</strong> sebelum aktivitas dimulai.
-                  </p>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 space-y-1">
-                  <div className="font-semibold text-slate-800 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    Pesan Seragam Pagi Saja
+                {/* Jadwal Siang */}
+                <div>
+                  <label className="font-semibold text-slate-700 block mb-1">
+                    ☀️ Jadwal Siang:
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    <input
+                      type="time"
+                      value={currentSettings.obat.jamKirimSiang}
+                      onChange={(e) => setCurrentSettings({
+                        ...currentSettings,
+                        obat: { ...currentSettings.obat, jamKirimSiang: e.target.value }
+                      })}
+                      className="px-3 py-1.5 rounded-lg border border-slate-300 font-mono text-xs font-bold text-slate-900 focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <span className="text-[11px] text-slate-500 font-medium">WIB</span>
                   </div>
-                  <p className="text-slate-500 leading-relaxed">
-                    Tidak ada jadwal kirim malam. Pasien dan pendamping cukup diingatkan 1x di pagi hari secara sopan sesuai anjuran dokter.
+                </div>
+
+                {/* Jadwal Malam */}
+                <div>
+                  <label className="font-semibold text-slate-700 block mb-1">
+                    🌙 Jadwal Malam:
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    <input
+                      type="time"
+                      value={currentSettings.obat.jamKirimMalam}
+                      onChange={(e) => setCurrentSettings({
+                        ...currentSettings,
+                        obat: { ...currentSettings.obat, jamKirimMalam: e.target.value }
+                      })}
+                      className="px-3 py-1.5 rounded-lg border border-slate-300 font-mono text-xs font-bold text-slate-900 focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <span className="text-[11px] text-slate-500 font-medium">WIB</span>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[11px] text-emerald-800 space-y-1">
+                  <div className="font-semibold text-emerald-900 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    Pengingat Rutin 3x Sehari
+                  </div>
+                  <p className="text-emerald-700 leading-relaxed">
+                    Pesan dikirim pagi, siang, dan malam sesuai jadwal minum obat pasien agar kepatuhan konsumsi obat meningkat.
                   </p>
                 </div>
 
@@ -678,18 +761,19 @@ export const UnifiedMessageAutomation = ({
 
       {/* TAB 2: EDIT TEKS / REDAKSI PESAN */}
       {activeSubTab === 'template' && (
-        <div className="space-y-6">
+        <div className="space-y-5">
+          {/* Card header: Kategori */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
               <div>
-                <h3 className="font-bold text-slate-900 text-base">Format Kata-kata Pesan Resmi WhatsApp RSJ</h3>
+                <h3 className="font-bold text-slate-900 text-base">Format Pesan Resmi WhatsApp RSJ</h3>
                 <p className="text-xs text-slate-500">
-                  Teks ini yang akan dikirimkan otomatis oleh sistem. Kode kurung kurawal seperti {'{nama_pasien}'} akan otomatis diisi dengan data asli pasien.
+                  Teks ini dikirimkan otomatis sesuai data obat pasien di database. Variabel <code className="bg-slate-100 px-1 rounded">{'{nama_pasien}'}</code> dll diisi otomatis.
                 </p>
               </div>
 
               {/* Template Category Selector */}
-              <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl">
+              <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl shrink-0">
                 <button
                   onClick={() => handleSelectTemplateCategory('minum_obat')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
@@ -718,58 +802,264 @@ export const UnifiedMessageAutomation = ({
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  🔄 Iterasi Farmasi
+                  🔄 Jadwal Iter
                 </button>
               </div>
             </div>
 
-            {/* Variable Tags Info */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-              <span className="font-bold text-slate-700 block mb-1.5">Variabel Otomatis yang Bisa Dipakai:</span>
-              <div className="flex flex-wrap gap-1.5 font-mono text-[11px]">
-                <span className="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-800">{'{nama_pasien}'}</span>
-                <span className="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-800">{'{nama_caregiver}'}</span>
-                <span className="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-800">{'{nomor_rm}'}</span>
-                <span className="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-800">{'{dokter_dpjp}'}</span>
-                <span className="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-800">{'{daftar_obat_pagi}'}</span>
-                <span className="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-800">{'{tanggal_kontrol}'}</span>
-                <span className="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-800">{'{tanggal_iter}'}</span>
-                <span className="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-800">{'{hotline_rsj}'}</span>
+            {/* ======= SUB-SESI OBAT (hanya tampil jika kategori minum_obat) ======= */}
+            {selectedTemplateCategory === 'minum_obat' && (
+              <div className="space-y-5">
+                {/* Sub-tab sesi */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-600 shrink-0">Sesi Kirim:</span>
+                  <div className="flex items-center gap-1.5 p-1 bg-emerald-50 border border-emerald-200 rounded-xl">
+                    {(['pagi', 'siang', 'malam'] as const).map((sesi) => (
+                      <button
+                        key={sesi}
+                        onClick={() => handleSelectObatSesi(sesi)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          obatSubSesi === sesi
+                            ? 'bg-emerald-700 text-white shadow-xs'
+                            : 'text-emerald-700 hover:bg-emerald-100'
+                        }`}
+                      >
+                        {sesi === 'pagi' ? '🌅 Pagi' : sesi === 'siang' ? '☀️ Siang' : '🌙 Malam'}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-[11px] text-slate-400">({currentSettings.obat[obatSubSesi === 'pagi' ? 'jamKirimPagi' : obatSubSesi === 'siang' ? 'jamKirimSiang' : 'jamKirimMalam']} WIB)</span>
+                </div>
+
+                {/* Info variabel khusus obat */}
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+                  <span className="font-bold text-emerald-800 block mb-1.5">💊 Variabel Khusus Obat {obatSubSesi === 'pagi' ? 'Pagi' : obatSubSesi === 'siang' ? 'Siang' : 'Malam'} (Klik untuk sisipkan):</span>
+                  <div className="flex flex-wrap gap-1.5 font-mono text-[11px]">
+                    {[
+                      obatSubSesi === 'pagi' ? '{daftar_obat_pagi}' : obatSubSesi === 'siang' ? '{daftar_obat_siang}' : '{daftar_obat_malam}',
+                      '{jam_minum}',
+                      '{nama_pasien}',
+                      '{nomor_rm}',
+                      '{dokter_dpjp}',
+                      '{nama_panggilan}',
+                      '{nama_caregiver}',
+                      '{hubungan_caregiver}',
+                      '{diagnosa}',
+                      '{hotline_rsj}',
+                      '{nama_rsj}'
+                    ].map(v => (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => handleInsertVariable(v)}
+                        title={`Klik untuk menyisipkan ${v}`}
+                        className="px-2 py-0.5 bg-white hover:bg-emerald-100 border border-emerald-300 rounded text-emerald-900 transition-colors cursor-pointer text-left"
+                      >
+                        + {v}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-emerald-700 mt-2 leading-relaxed">
+                    Variabel <strong>{obatSubSesi === 'pagi' ? '{daftar_obat_pagi}' : obatSubSesi === 'siang' ? '{daftar_obat_siang}' : '{daftar_obat_malam}'}</strong> akan diisi otomatis daftar obat {obatSubSesi} tiap pasien dari database, beserta dosis dan aturan pakainya.
+                  </p>
+                </div>
+
+                {/* Textarea */}
+                <div className="space-y-2">
+                  <label className="font-bold text-slate-800 text-xs block">
+                    Isi Pesan WhatsApp — Obat {obatSubSesi === 'pagi' ? '🌅 Pagi' : obatSubSesi === 'siang' ? '☀️ Siang' : '🌙 Malam'} ({currentEditingTemplate?.defaultTime} WIB):
+                  </label>
+                  <textarea
+                    rows={12}
+                    value={editingTemplateText}
+                    onChange={(e) => setEditingTemplateText(e.target.value)}
+                    className="w-full p-3.5 rounded-xl border border-slate-300 font-mono text-xs sm:text-sm text-slate-800 leading-relaxed focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="Ketik format template pesan obat..."
+                  />
+                  <p className="text-[11px] text-slate-500">
+                    Gunakan <strong>*teks*</strong> untuk tebal, <strong>_teks_</strong> untuk miring di WhatsApp. Variabel akan digantikan dengan data riil pasien dari database.
+                  </p>
+                </div>
+
+                {/* Save & Reset */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
+                  <span className="text-xs text-slate-500">
+                    Template ini dipakai otomatis setiap sesi {obatSubSesi === 'pagi' ? 'pagi' : obatSubSesi === 'siang' ? 'siang' : 'malam'} untuk semua pasien.
+                  </span>
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={handleResetCurrentTemplate}
+                      title="Kembalikan ke format baku/standar RSJ yang lengkap"
+                      className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Reset Format Standar
+                    </button>
+                    <button
+                      onClick={handleSaveCurrentTemplate}
+                      className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
+                    >
+                      <Save className="w-4 h-4" />
+                      Simpan Template {obatSubSesi === 'pagi' ? 'Pagi' : obatSubSesi === 'siang' ? 'Siang' : 'Malam'}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Textarea */}
-            <div className="space-y-2">
-              <label className="font-bold text-slate-800 text-xs block">
-                Isi Pesan WhatsApp ({currentEditingTemplate?.nama}):
-              </label>
-              <textarea
-                rows={9}
-                value={editingTemplateText}
-                onChange={(e) => setEditingTemplateText(e.target.value)}
-                className="w-full p-3.5 rounded-xl border border-slate-300 font-sans text-xs sm:text-sm text-slate-800 leading-relaxed focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                placeholder="Ketik format template pesan..."
-              />
-            </div>
+            {/* ======= KONTROL DOKTER ======= */}
+            {selectedTemplateCategory === 'kontrol_dokter' && (
+              <div className="space-y-5">
+                <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl text-xs">
+                  <span className="font-bold text-teal-800 block mb-1.5">📅 Variabel Template Kontrol Dokter (Klik untuk sisipkan):</span>
+                  <div className="flex flex-wrap gap-1.5 font-mono text-[11px]">
+                    {[
+                      '{nama_panggilan}',
+                      '{nama_pasien}',
+                      '{nomor_rm}',
+                      '{tanggal_kontrol}',
+                      '{jam_kontrol}',
+                      '{dokter_dpjp}',
+                      '{poliklinik}',
+                      '{diagnosa}',
+                      '{hotline_rsj}',
+                      '{nama_rsj}'
+                    ].map(v => (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => handleInsertVariable(v)}
+                        title={`Klik untuk menyisipkan ${v}`}
+                        className="px-2 py-0.5 bg-white hover:bg-teal-100 border border-teal-300 rounded text-teal-900 transition-colors cursor-pointer text-left"
+                      >
+                        + {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="font-bold text-slate-800 text-xs block">
+                    Isi Pesan WhatsApp — 🗓 Kontrol Dokter:
+                  </label>
+                  <textarea
+                    rows={12}
+                    value={editingTemplateText}
+                    onChange={(e) => setEditingTemplateText(e.target.value)}
+                    className="w-full p-3.5 rounded-xl border border-teal-300 font-mono text-xs sm:text-sm text-slate-800 leading-relaxed focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    placeholder="Ketik format template kontrol dokter..."
+                  />
+                </div>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
+                  <span className="text-xs text-slate-500">Dikirim otomatis H-3, H-2, H-1 sebelum jadwal kontrol dokter.</span>
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={handleResetCurrentTemplate}
+                      title="Kembalikan ke format baku/standar RSJ yang lengkap"
+                      className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Reset Format Standar
+                    </button>
+                    <button
+                      onClick={handleSaveCurrentTemplate}
+                      className="px-5 py-2.5 bg-teal-700 hover:bg-teal-600 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
+                    >
+                      <Save className="w-4 h-4" />
+                      Simpan Template Kontrol
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
-            {/* Save Template Button */}
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-xs text-slate-500">
-                Template ini akan digunakan langsung saat sistem mengirim otomatis.
-              </span>
-              <button
-                onClick={handleSaveCurrentTemplate}
-                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors flex items-center gap-2"
-              >
-                <Save className="w-4 h-4 text-emerald-400" />
-                Simpan Perubahan Teks
-              </button>
-            </div>
+            {/* ======= JADWAL ITER ======= */}
+            {selectedTemplateCategory === 'iter_resep' && (
+              <div className="space-y-5">
+                {/* Panduan Ketentuan Jadwal Iter RSJ */}
+                <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-xl text-xs space-y-1.5 text-amber-900">
+                  <div className="font-bold flex items-center gap-1.5 text-amber-950">
+                    <span>📌</span> Ketentuan Resmi Jadwal Iter RSJ Naimata:
+                  </div>
+                  <ul className="list-disc list-inside space-y-1 text-[11px] leading-relaxed pl-1">
+                    <li><strong>Wajib Tepat Tanggal:</strong> Pengambilan obat harus sesuai tanggal yang ditentukan (tidak boleh lebih awal atau terlambat).</li>
+                    <li><strong>Iter ke-1 dan ke-2:</strong> Boleh diwakili oleh keluarga/caregiver (membawa kartu berobat & copy resep).</li>
+                    <li><strong>Iter ke-3:</strong> <strong>Wajib bersama pasien</strong> (pasien hadir langsung untuk evaluasi dokter dan pembaharuan resep).</li>
+                  </ul>
+                </div>
+
+                <div className="p-3 bg-sky-50 border border-sky-200 rounded-xl text-xs">
+                  <span className="font-bold text-sky-800 block mb-1.5">🔄 Variabel Template Jadwal Iter (Klik untuk sisipkan):</span>
+                  <div className="flex flex-wrap gap-1.5 font-mono text-[11px]">
+                    {[
+                      '{nama_panggilan}',
+                      '{nama_pasien}',
+                      '{nomor_rm}',
+                      '{tanggal_iter}',
+                      '{iter_ke}',
+                      '{sisa_iter}',
+                      '{nomor_resep}',
+                      '{ketentuan_kehadiran_iter}',
+                      '{ketentuan_tanggal_iter}',
+                      '{aturan_jadwal_iter}',
+                      '{hotline_rsj}',
+                      '{nama_rsj}'
+                    ].map(v => (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => handleInsertVariable(v)}
+                        title={`Klik untuk menyisipkan ${v}`}
+                        className="px-2 py-0.5 bg-white hover:bg-sky-100 border border-sky-300 rounded text-sky-900 transition-colors cursor-pointer text-left"
+                      >
+                        + {v}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-sky-700 mt-2 text-[11px] leading-relaxed">
+                    Variabel <strong>{'{ketentuan_kehadiran_iter}'}</strong> akan secara otomatis membedakan pesan: menyatakan <em>"Boleh diwakili"</em> pada iter 1 & 2, atau <em>"Wajib bersama pasien"</em> saat iter ke-3.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <label className="font-bold text-slate-800 text-xs block">
+                    Isi Pesan WhatsApp — 🔄 Jadwal Iter:
+                  </label>
+                  <textarea
+                    rows={13}
+                    value={editingTemplateText}
+                    onChange={(e) => setEditingTemplateText(e.target.value)}
+                    className="w-full p-3.5 rounded-xl border border-sky-300 font-mono text-xs sm:text-sm text-slate-800 leading-relaxed focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    placeholder="Ketik format template Jadwal Iter..."
+                  />
+                </div>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
+                  <span className="text-xs text-slate-500">Dikirim otomatis H-3, H-2, H-1 sebelum tanggal Jadwal Iter farmasi.</span>
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={handleResetCurrentTemplate}
+                      title="Kembalikan ke format baku/standar RSJ yang lengkap"
+                      className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Reset Format Standar
+                    </button>
+                    <button
+                      onClick={handleSaveCurrentTemplate}
+                      className="px-5 py-2.5 bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
+                    >
+                      <Save className="w-4 h-4" />
+                      Simpan Template Jadwal Iter
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       )}
-
-
 
       {/* TAB 4: KONEKSI WHATSAPP GATEWAY (BSP) */}
       {activeSubTab === 'gateway' && (

@@ -5,15 +5,86 @@ export const INITIAL_TEMPLATES: MessageTemplate[] = [
     id: 'tmpl-obat-pagi',
     category: 'minum_obat',
     kode: 'OBAT_PAGI',
-    nama: 'Pengingat Minum Obat Pagi (06:00 WIB)',
-    deskripsi: 'Pesan seragam dikirim setiap hari pukul 06:00 pagi untuk mengingatkan minum obat sesuai resep dokter dengan bahasa sopan.',
+    nama: 'Pengingat Minum Obat Pagi 🌅',
+    deskripsi: 'Pesan dikirim sesi pagi, berisi daftar obat pagi beserta dosis dan aturan pakai dari database pasien.',
     defaultTime: '06:00',
     active: true,
-    templateText: `Selamat pagi {nama_panggilan}.
+    templateText: `🌅 *PENGINGAT MINUM OBAT PAGI*
+*{nama_rsj}*
 
-Kami dari RSJ Naimata ingin mengingatkan Bapak/Ibu agar tidak lupa meminum obat hari ini sesuai resep dan anjuran dokter.
+Selamat pagi, *{nama_panggilan}*.
 
-Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
+Mengingatkan jadwal minum obat pagi untuk pasien:
+👤 *Nama Pasien:* {nama_pasien}
+📋 *No. RM:* {nomor_rm}
+👨‍⚕️ *Dokter DPJP:* {dokter_dpjp}
+⏰ *Waktu Minum:* {jam_minum}
+
+💊 *Daftar Obat Pagi & Aturan Pakai:*
+{daftar_obat_pagi}
+
+Mohon pastikan obat diminum teratur sesudah makan sesuai anjuran dokter demi kestabilan dan pemulihan kesehatan {nama_pasien}.
+
+Jika ada keluhan efek samping atau pertanyaan, hubungi kami:
+📞 *Hotline RSJ:* {hotline_rsj}
+
+Terima kasih atas ketelatenan {nama_panggilan} mendampingi pasien. Semoga lekas pulih dan sehat selalu. 🙏`,
+  },
+  {
+    id: 'tmpl-obat-siang',
+    category: 'minum_obat',
+    kode: 'OBAT_SIANG',
+    nama: 'Pengingat Minum Obat Siang ☀️',
+    deskripsi: 'Pesan dikirim sesi siang, berisi daftar obat siang beserta dosis dan aturan pakai dari database pasien.',
+    defaultTime: '12:00',
+    active: true,
+    templateText: `☀️ *PENGINGAT MINUM OBAT SIANG*
+*{nama_rsj}*
+
+Selamat siang, *{nama_panggilan}*.
+
+Mengingatkan jadwal minum obat siang untuk pasien:
+👤 *Nama Pasien:* {nama_pasien}
+📋 *No. RM:* {nomor_rm}
+👨‍⚕️ *Dokter DPJP:* {dokter_dpjp}
+⏰ *Waktu Minum:* {jam_minum}
+
+💊 *Daftar Obat Siang & Aturan Pakai:*
+{daftar_obat_siang}
+
+Mohon dipastikan obat diminum tepat waktu setelah makan siang sesuai petunjuk {dokter_dpjp}.
+
+📞 *Hotline RSJ:* {hotline_rsj}
+
+Terima kasih dan salam sehat selalu. 🙏`,
+  },
+  {
+    id: 'tmpl-obat-malam',
+    category: 'minum_obat',
+    kode: 'OBAT_MALAM',
+    nama: 'Pengingat Minum Obat Malam 🌙',
+    deskripsi: 'Pesan dikirim sesi malam, berisi daftar obat malam beserta dosis dan aturan pakai dari database pasien.',
+    defaultTime: '19:00',
+    active: true,
+    templateText: `🌙 *PENGINGAT MINUM OBAT MALAM*
+*{nama_rsj}*
+
+Selamat malam, *{nama_panggilan}*.
+
+Mengingatkan jadwal minum obat malam sebelum beristirahat untuk pasien:
+👤 *Nama Pasien:* {nama_pasien}
+📋 *No. RM:* {nomor_rm}
+👨‍⚕️ *Dokter DPJP:* {dokter_dpjp}
+⏰ *Waktu Minum:* {jam_minum}
+
+💊 *Daftar Obat Malam & Aturan Pakai:*
+{daftar_obat_malam}
+
+Mohon diminum sebelum tidur sesuai dosis anjuran. Istirahat yang cukup sangat mendukung proses pemulihan {nama_pasien}.
+
+📞 *Hotline RSJ:* {hotline_rsj}
+
+Selamat beristirahat, terima kasih atas dedikasi dan perhatian {nama_panggilan}. 🙏`,
   },
   {
     id: 'tmpl-kontrol-dokter',
@@ -23,25 +94,63 @@ Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
     deskripsi: 'Pesan santun mengingatkan tanggal jadwal kontrol dokter spesialis jiwa di RSJ Naimata.',
     defaultTime: '06:00',
     active: true,
-    templateText: `Selamat pagi {nama_panggilan}.
+    templateText: `🗓 *PENGINGAT JADWAL KONTROL DOKTER*
+*{nama_rsj}*
 
-Kami dari RSJ Naimata ingin mengingatkan bahwa terdapat jadwal kontrol dokter pada tanggal {tanggal_kontrol}. Mohon dapat hadir sesuai jadwal yang telah ditentukan.
+Selamat pagi, *{nama_panggilan}*.
 
-Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
+Kami menginformasikan jadwal konsultasi dan evaluasi rutin untuk pasien:
+👤 *Nama Pasien:* {nama_pasien}
+📋 *No. RM:* {nomor_rm}
+📅 *Tanggal Kontrol:* {tanggal_kontrol}
+⏰ *Jam Layanan:* {jam_kontrol}
+🏥 *Poliklinik:* {poliklinik}
+👨‍⚕️ *Dokter Pemeriksa:* {dokter_dpjp}
+
+Mohon hadir 15 menit sebelum jam pelayanan dengan membawa kartu identitas/BPJS dan sisa obat (jika ada).
+
+Jika berhalangan hadir atau ingin konfirmasi jadwal, hubungi kami:
+📞 *Hotline RSJ:* {hotline_rsj}
+
+Terima kasih atas kerjasamanya. Salam sehat. 🙏`,
   },
   {
     id: 'tmpl-iter-resep',
     category: 'iter_resep',
     kode: 'ITER_RESEP',
-    nama: 'Pengingat Jadwal Iterasi Farmasi',
-    deskripsi: 'Pesan santun mengingatkan tanggal jadwal iterasi (pengambilan obat) di farmasi RSJ Naimata.',
+    nama: 'Pengingat Jadwal Iter',
+    deskripsi: 'Pesan pengingat Jadwal Iter di farmasi (wajib tepat tanggal: tidak boleh lebih awal/terlambat; iter 1-2 boleh diwakili, iter 3 wajib bersama pasien).',
     defaultTime: '06:00',
     active: true,
-    templateText: `Selamat pagi {nama_panggilan}.
+    templateText: `🔄 *PENGINGAT JADWAL ITER*
+Farmasi *{nama_rsj}*
 
-Kami dari RSJ Naimata ingin mengingatkan mengenai jadwal iterasi (pengambilan obat) di farmasi pada tanggal {tanggal_iter}.
+Selamat pagi, *{nama_panggilan}*.
 
-Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
+Mengingatkan jadwal pengambilan obat lanjutan (*Jadwal Iter*) untuk pasien:
+👤 *Nama Pasien:* {nama_pasien}
+📋 *No. RM:* {nomor_rm}
+📑 *No. Resep:* {nomor_resep}
+📅 *Tanggal Pengambilan:* {tanggal_iter}
+🔢 *Status Iterasi:* {iter_ke} (Sisa: {sisa_iter})
+🏥 *Lokasi:* Farmasi Rawat Jalan {nama_rsj}
+
+⚠️ *KETENTUAN PENTING PENGAMBILAN JADWAL ITER:*
+1. 🗓 *Wajib Tepat Tanggal:*
+Pengambilan obat *HARUS tepat pada tanggal yang ditentukan ({tanggal_iter})*. Tidak diperkenankan mengambil lebih awal ataupun terlambat demi kepatuhan terapi dan ketersediaan stok obat.
+
+2. 👥 *Ketentuan Kehadiran Pasien:*
+{ketentuan_kehadiran_iter}
+
+📄 *Berkas yang Wajib Dibawa ke Farmasi:*
+• Kartu Identitas Pasien (KTP / Kartu BPJS Asli)
+• Kartu Berobat Pasien RSJ Naimata
+• Salinan / Copy Resep Iter asli yang masih berlaku
+
+Jika ada kendala mendesak terkait jadwal pengambilan obat, silakan hubungi:
+📞 *Hotline Farmasi/RSJ:* {hotline_rsj}
+
+Terima kasih atas ketertiban dan kerjasamanya demi pemulihan optimal {nama_pasien}. Salam sehat. 🙏`,
   },
   {
     id: 'tmpl-edukasi',
@@ -51,11 +160,19 @@ Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
     deskripsi: 'Pesan singkat penyemangat dan apresiasi bagi keluarga/caregiver dari RSJ Naimata.',
     defaultTime: '06:00',
     active: true,
-    templateText: `Selamat pagi {nama_panggilan}.
+    templateText: `💙 *PESAN DUKUNGAN KELUARGA & CAREGIVER*
+*{nama_rsj}*
 
-Kami dari RSJ Naimata mengucapkan terima kasih atas perhatian dan ketelatenan Bapak/Ibu dalam mendampingi keluarga tercinta.
+Selamat pagi, *{nama_panggilan}*.
 
-Semoga keluarga senantiasa dilimpahi kesehatan dan kebahagiaan. Terima kasih.`,
+Peran dan ketelatenan Anda dalam mendampingi *{nama_pasien}* (No. RM: {nomor_rm}) adalah kunci utama dalam proses pemulihan dan kestabilan kesehatan jiwa.
+
+Kepatuhan minum obat dan komunikasi yang hangat di rumah sangat berharga bagi pemulihan {nama_pasien}. Tetap semangat, jaga kesehatan fisik dan mental Anda juga sebagai pendamping.
+
+Kami segenap tim medis *{nama_rsj}* senantiasa siap mendukung:
+📞 *Hotline Konsultasi RSJ:* {hotline_rsj}
+
+Terima kasih atas dedikasi dan kasih sayang yang luar biasa. 🙏`,
   },
 ];
 
@@ -419,11 +536,27 @@ export const INITIAL_MESSAGES: WhatsAppMessage[] = [
     recipientType: 'Caregiver',
     category: 'minum_obat',
     title: 'Pengingat Minum Obat Pagi',
-    body: `Selamat pagi Bapak/Ibu Siti Aminah.
+    body: `🌅 *PENGINGAT MINUM OBAT PAGI*
+*RSJ Prof. Dr. V. L. Ratumbuysang (RSJ Naimata)*
 
-Kami dari RSJ Naimata ingin mengingatkan Bapak/Ibu agar tidak lupa meminum obat hari ini sesuai resep dan anjuran dokter.
+Selamat pagi, *Bapak/Ibu Siti Aminah*.
 
-Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
+Mengingatkan jadwal minum obat pagi untuk pasien:
+👤 *Nama Pasien:* Bambang Triyono
+📋 *No. RM:* RM-2024-0102
+👨‍⚕️ *Dokter DPJP:* dr. Hendra Wicaksono, Sp.KJ
+⏰ *Waktu Minum:* 07:00 WIB
+
+💊 *Daftar Obat Pagi & Aturan Pakai:*
+• Risperidone 2 mg – Sesudah makan
+• Trihexyphenidyl (THP) 2 mg – Pencegah kaku otot, sesudah makan
+
+Mohon pastikan obat diminum teratur sesudah makan sesuai anjuran dokter demi kestabilan dan pemulihan kesehatan Bambang Triyono.
+
+Jika ada keluhan efek samping atau pertanyaan, hubungi kami:
+📞 *Hotline RSJ:* 0811-3811-9922
+
+Terima kasih atas ketelatenan Bapak/Ibu Siti Aminah mendampingi pasien. Semoga lekas pulih dan sehat selalu. 🙏`,
     status: 'replied',
     scheduledAt: '2026-09-22 06:00',
     sentAt: '2026-09-22 06:00:12',
@@ -443,11 +576,26 @@ Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
     recipientType: 'Pasien',
     category: 'minum_obat',
     title: 'Pengingat Minum Obat Pagi',
-    body: `Selamat pagi Bapak/Ibu Nurul Aini.
+    body: `🌅 *PENGINGAT MINUM OBAT PAGI*
+*RSJ Prof. Dr. V. L. Ratumbuysang (RSJ Naimata)*
 
-Kami dari RSJ Naimata ingin mengingatkan Bapak/Ibu agar tidak lupa meminum obat hari ini sesuai resep dan anjuran dokter.
+Selamat pagi, *Ibu Nurul Aini*.
 
-Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
+Mengingatkan jadwal minum obat pagi untuk Anda:
+👤 *Nama Pasien:* Nurul Aini
+📋 *No. RM:* RM-2024-0551
+👨‍⚕️ *Dokter DPJP:* dr. Farida Kusuma, Sp.KJ
+⏰ *Waktu Minum:* 07:00 WIB
+
+💊 *Daftar Obat Pagi & Aturan Pakai:*
+• Sertraline 50 mg – Sesudah sarapan
+
+Mohon pastikan obat diminum teratur sesudah sarapan sesuai anjuran dr. Farida Kusuma, Sp.KJ demi kestabilan proses pemulihan.
+
+Jika ada keluhan atau pertanyaan, hubungi kami:
+📞 *Hotline RSJ:* 0811-3811-9922
+
+Semoga lekas pulih dan senantiasa sehat selalu. 🙏`,
     status: 'replied',
     scheduledAt: '2026-09-22 06:00',
     sentAt: '2026-09-22 06:00:14',
@@ -467,11 +615,25 @@ Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
     recipientType: 'Caregiver',
     category: 'kontrol_dokter',
     title: 'Pengingat Kontrol Dokter',
-    body: `Selamat pagi Bapak/Ibu Wahyudi.
+    body: `🗓 *PENGINGAT JADWAL KONTROL DOKTER*
+*RSJ Prof. Dr. V. L. Ratumbuysang (RSJ Naimata)*
 
-Kami dari RSJ Naimata ingin mengingatkan bahwa terdapat jadwal kontrol dokter pada tanggal 2026-09-22. Mohon dapat hadir sesuai jadwal yang telah ditentukan.
+Selamat pagi, *Bapak/Ibu Wahyudi*.
 
-Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
+Kami menginformasikan jadwal konsultasi dan evaluasi rutin untuk pasien:
+👤 *Nama Pasien:* Rahmat Hidayat
+📋 *No. RM:* RM-2022-1140
+📅 *Tanggal Kontrol:* Selasa, 22 September 2026
+⏰ *Jam Layanan:* 08:30 WIB
+🏥 *Poliklinik:* Poli Jiwa Dewasa Subspesialis
+👨‍⚕️ *Dokter Pemeriksa:* dr. Hendra Wicaksono, Sp.KJ
+
+Mohon hadir 15 menit sebelum jam pelayanan dengan membawa kartu identitas/BPJS dan sisa obat (jika ada).
+
+Jika berhalangan hadir atau ingin konfirmasi jadwal, hubungi kami:
+📞 *Hotline RSJ:* 0811-3811-9922
+
+Terima kasih atas kerjasamanya. Salam sehat. 🙏`,
     status: 'read',
     scheduledAt: '2026-09-21 06:00',
     sentAt: '2026-09-21 06:00:08',
@@ -489,11 +651,25 @@ Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
     recipientType: 'Caregiver',
     category: 'kontrol_dokter',
     title: 'Pengingat Kontrol Dokter',
-    body: `Selamat pagi Bapak/Ibu Raditya Pratama.
+    body: `🗓 *PENGINGAT JADWAL KONTROL DOKTER*
+*RSJ Prof. Dr. V. L. Ratumbuysang (RSJ Naimata)*
 
-Kami dari RSJ Naimata ingin mengingatkan bahwa terdapat jadwal kontrol dokter pada tanggal 2026-09-23. Mohon dapat hadir sesuai jadwal yang telah ditentukan.
+Selamat pagi, *Bapak/Ibu Raditya Pratama*.
 
-Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
+Kami menginformasikan jadwal konsultasi dan evaluasi rutin untuk pasien:
+👤 *Nama Pasien:* Dewi Lestari
+📋 *No. RM:* RM-2023-0891
+📅 *Tanggal Kontrol:* Rabu, 23 September 2026
+⏰ *Jam Layanan:* 10:30 WIB
+🏥 *Poliklinik:* Poli Mood Disorder & Afektif
+👨‍⚕️ *Dokter Pemeriksa:* dr. Ratna Anindita, Sp.KJ, M.Kes
+
+Mohon hadir 15 menit sebelum jam pelayanan dengan membawa kartu identitas/BPJS dan sisa obat (jika ada).
+
+Jika berhalangan hadir atau ingin konfirmasi jadwal, hubungi kami:
+📞 *Hotline RSJ:* 0811-3811-9922
+
+Terima kasih atas kerjasamanya. Salam sehat. 🙏`,
     status: 'replied',
     scheduledAt: '2026-09-20 06:00',
     sentAt: '2026-09-20 06:00:05',
@@ -512,12 +688,36 @@ Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
     recipientName: 'Hj. Mardiah (Ibu)',
     recipientType: 'Caregiver',
     category: 'iter_resep',
-    title: 'Pengingat Iterasi Farmasi',
-    body: `Selamat pagi Bapak/Ibu Hj. Mardiah.
+    title: 'Pengingat Jadwal Iter',
+    body: `🔄 *PENGINGAT JADWAL ITER*
+Farmasi *RSJ Prof. Dr. V. L. Ratumbuysang (RSJ Naimata)*
 
-Kami dari RSJ Naimata ingin mengingatkan mengenai jadwal iterasi (pengambilan obat) di farmasi pada tanggal 2026-09-23.
+Selamat pagi, *Bapak/Ibu Hj. Mardiah*.
 
-Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
+Mengingatkan jadwal pengambilan obat lanjutan (*Jadwal Iter*) untuk pasien:
+👤 *Nama Pasien:* Nurul Aini
+📋 *No. RM:* RM-2024-0551
+📑 *No. Resep:* RSP-IX-5589
+📅 *Tanggal Pengambilan:* Rabu, 23 September 2026
+🔢 *Status Iterasi:* Iter ke-2 (Sisa: 2x dari total 3x pengulangan)
+🏥 *Lokasi:* Farmasi Rawat Jalan RSJ Naimata
+
+⚠️ *KETENTUAN PENTING PENGAMBILAN JADWAL ITER:*
+1. 🗓 *Wajib Tepat Tanggal:*
+Pengambilan obat *HARUS tepat pada tanggal yang ditentukan (Rabu, 23 September 2026)*. Tidak diperkenankan mengambil lebih awal ataupun terlambat demi kepatuhan terapi dan ketersediaan stok obat.
+
+2. 👥 *Ketentuan Kehadiran Pasien:*
+✅ *BOLEH DIWAKILI:* Jadwal iter ke-2 ini *boleh diwakili* oleh keluarga/caregiver dengan membawa kartu berobat dan copy resep asli. (Catatan: Pengambilan iter ke-3 berikutnya wajib bersama pasien langsung).
+
+📄 *Berkas yang Wajib Dibawa ke Farmasi:*
+• Kartu Identitas Pasien (KTP / Kartu BPJS Asli)
+• Kartu Berobat Pasien RSJ Naimata
+• Salinan / Copy Resep Iter asli yang masih berlaku
+
+Jika ada kendala mendesak terkait jadwal pengambilan obat, silakan hubungi:
+📞 *Hotline Farmasi/RSJ:* 0811-3811-9922
+
+Terima kasih atas ketertiban dan kerjasamanya demi pemulihan optimal Nurul Aini. Salam sehat. 🙏`,
     status: 'delivered',
     scheduledAt: '2026-09-21 06:00',
     sentAt: '2026-09-21 06:00:19',
@@ -534,11 +734,27 @@ Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
     recipientType: 'Caregiver',
     category: 'minum_obat',
     title: 'Pengingat Minum Obat Pagi',
-    body: `Selamat pagi Bapak/Ibu Endang Sulastri.
+    body: `🌅 *PENGINGAT MINUM OBAT PAGI*
+*RSJ Prof. Dr. V. L. Ratumbuysang (RSJ Naimata)*
 
-Kami dari RSJ Naimata ingin mengingatkan Bapak/Ibu agar tidak lupa meminum obat hari ini sesuai resep dan anjuran dokter.
+Selamat pagi, *Bapak/Ibu Endang Sulastri*.
 
-Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
+Mengingatkan jadwal minum obat pagi untuk pasien:
+👤 *Nama Pasien:* Agus Setiawan
+📋 *No. RM:* RM-2023-0418
+👨‍⚕️ *Dokter DPJP:* dr. Hendra Wicaksono, Sp.KJ
+⏰ *Waktu Minum:* 07:00 WIB
+
+💊 *Daftar Obat Pagi & Aturan Pakai:*
+• Aripiprazole 10 mg – Sesudah sarapan
+• Lithium Carbonate 300 mg – Sesudah makan, minum air putih cukup
+
+Mohon pastikan obat diminum teratur sesudah makan sesuai anjuran dokter demi kestabilan dan pemulihan kesehatan Agus Setiawan.
+
+Jika ada keluhan efek samping atau pertanyaan, hubungi kami:
+📞 *Hotline RSJ:* 0811-3811-9922
+
+Terima kasih atas ketelatenan Bapak/Ibu Endang Sulastri mendampingi pasien. Semoga lekas pulih dan sehat selalu. 🙏`,
     status: 'replied',
     scheduledAt: '2026-09-21 06:00',
     sentAt: '2026-09-21 06:00:10',
@@ -558,11 +774,26 @@ Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
     recipientType: 'Pasien',
     category: 'minum_obat',
     title: 'Pengingat Minum Obat Pagi',
-    body: `Selamat pagi Bapak/Ibu Rahmat Hidayat.
+    body: `🌅 *PENGINGAT MINUM OBAT PAGI*
+*RSJ Prof. Dr. V. L. Ratumbuysang (RSJ Naimata)*
 
-Kami dari RSJ Naimata ingin mengingatkan Bapak/Ibu agar tidak lupa meminum obat hari ini sesuai resep dan anjuran dokter.
+Selamat pagi, *Bapak Rahmat Hidayat*.
 
-Semoga Bapak/Ibu senantiasa sehat. Terima kasih.`,
+Mengingatkan jadwal minum obat pagi untuk Anda:
+👤 *Nama Pasien:* Rahmat Hidayat
+📋 *No. RM:* RM-2022-1140
+👨‍⚕️ *Dokter DPJP:* dr. Hendra Wicaksono, Sp.KJ
+⏰ *Waktu Minum:* 06:30 WIB
+
+💊 *Daftar Obat Pagi & Aturan Pakai:*
+• Haloperidol 5 mg – Sesudah makan
+
+Mohon pastikan obat diminum teratur sesudah makan sesuai anjuran dr. Hendra Wicaksono, Sp.KJ demi kestabilan proses pemulihan.
+
+Jika ada keluhan efek samping atau pertanyaan, hubungi kami:
+📞 *Hotline RSJ:* 0811-3811-9922
+
+Semoga lekas pulih dan senantiasa sehat selalu. 🙏`,
     status: 'delivered',
     scheduledAt: '2026-09-21 06:00',
     sentAt: '2026-09-21 06:00:03',
@@ -681,8 +912,9 @@ export const INITIAL_AUTOMATION_SETTINGS: AutomationSettings = {
   isActive: true, // Otomasi aktif secara default
   obat: {
     enabled: true,
-    jamKirimPagi: '06:00', // Jam 6 pagi setiap hari sesuai permintaan user
-    jamKirimMalam: '19:30',
+    jamKirimPagi: '06:00',   // Jam 6 pagi setiap hari
+    jamKirimSiang: '12:00',  // Jam 12 siang
+    jamKirimMalam: '19:00',  // Jam 7 malam
     targetPenerima: 'caregiver',
   },
   kontrol: {

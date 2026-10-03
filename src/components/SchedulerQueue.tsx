@@ -149,17 +149,17 @@ export const SchedulerQueue = ({
         });
       }
 
-      // 4. Check Iterasi Resep Farmasi Rules
+      // 4. Check Jadwal Iter Rules
       if (patient.jadwalIter.adaIter && patient.jadwalIter.sisaIterasi > 0) {
         const iterDate = patient.jadwalIter.tanggalIter;
         if (iterDate === '2026-09-22' || iterDate === '2026-09-23' || iterDate === '2026-09-24') {
-          const tmplIter = templates.find(t => t.kode === 'ITER_FARMASI') || templates[3];
+          const tmplIter = templates.find(t => t.id === 'tmpl-iter-resep' || t.kode === 'ITER_RESEP') || templates[3];
           const msg = generatePersonalizedMessage(tmplIter, patient, 'caregiver');
           items.push({
             id: `queue-iter-${patient.id}`,
             patient,
             category: 'iter_resep',
-            timingLabel: `Iterasi Resep Farmasi (${iterDate === '2026-09-22' ? 'Hari Ini' : 'Mulai ' + iterDate})`,
+            timingLabel: `Jadwal Iter (${iterDate === '2026-09-22' ? 'Hari Ini' : 'Mulai ' + iterDate})`,
             scheduledTime: '2026-09-22 08:30',
             template: tmplIter,
             recipientName: msg.recipientName,
@@ -238,7 +238,7 @@ export const SchedulerQueue = ({
             Antrean Notifikasi Otomatis &amp; Cron Scheduler
           </h2>
           <p className="text-xs text-slate-500">
-            Sistem otomatis memindai profil pasien untuk jadwal minum obat harian, jadwal kontrol psikiater (H-3/H-1/H-0), dan jadwal iterasi resep.
+            Sistem otomatis memindai profil pasien untuk jadwal minum obat harian, jadwal kontrol psikiater (H-3/H-1/H-0), dan Jadwal Iter.
           </p>
         </div>
 
@@ -248,7 +248,7 @@ export const SchedulerQueue = ({
             className="px-3 py-2 rounded-xl text-xs font-semibold bg-teal-50 text-teal-800 hover:bg-teal-100 border border-teal-200 transition-colors flex items-center gap-1.5"
           >
             <HelpCircle className="w-3.5 h-3.5 text-teal-600" />
-            Penjelasan Iterasi Resep
+            Penjelasan Jadwal Iter
           </button>
 
           <button
@@ -311,17 +311,17 @@ export const SchedulerQueue = ({
           </div>
         </div>
 
-        {/* Card 3: Iterasi Resep Farmasi */}
+        {/* Card 3: Jadwal Iter */}
         <div className="bg-white p-4 rounded-2xl border border-teal-200 bg-teal-50/20 shadow-2xs space-y-2">
           <div className="flex items-center gap-2 text-teal-700 font-bold text-xs sm:text-sm">
             <RefreshCw className="w-4 h-4" />
-            Alur 3: Jadwal Iterasi Resep Farmasi (Iter)
+            Alur 3: Jadwal Iter (Pengambilan Obat)
           </div>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Mengingatkan keluarga mengambil jatah obat rutin di Instalasi Farmasi RSJ <strong>tanpa antre periksa dokter lagi</strong> (H-2 sebelum persediaan habis).
+            Mengingatkan jadwal pengambilan obat lanjutan (wajib tepat tanggal). Iter 1 &amp; 2 boleh diwakili, sedangkan <strong>Iter 3 wajib bersama pasien</strong>.
           </p>
           <div className="text-[11px] text-teal-800 font-mono bg-teal-50 p-2 rounded-lg">
-            ✓ Fast-Track Farmasi: Copy Resep &amp; Kartu Pasien
+            ✓ Wajib Tepat Tanggal • Iter 3 Wajib Hadir Pasien
           </div>
         </div>
       </div>
@@ -369,7 +369,7 @@ export const SchedulerQueue = ({
           }`}
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          Iterasi Resep Farmasi
+          Jadwal Iter
         </button>
       </div>
 

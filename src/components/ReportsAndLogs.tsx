@@ -156,7 +156,7 @@ export const ReportsAndLogs = ({ messages, onDeleteAllMessages }: ReportsAndLogs
             <option value="all">Semua Kategori Reminder</option>
             <option value="minum_obat">Minum Obat Harian</option>
             <option value="kontrol_dokter">Kontrol Dokter Sp.KJ</option>
-            <option value="iter_resep">Iterasi Resep Farmasi</option>
+            <option value="iter_resep">Jadwal Iter</option>
             <option value="edukasi_rsj">Edukasi &amp; Dukungan RSJ</option>
           </select>
         </div>

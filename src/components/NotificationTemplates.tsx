@@ -49,8 +49,10 @@ export const NotificationTemplates = ({
     { tag: '{nama_panggilan}', label: 'Panggilan Formal', example: 'Ibu Siti Aminah' },
     { tag: '{nomor_rm}', label: 'No. Rekam Medis', example: 'RM-2024-0102' },
     { tag: '{daftar_obat_pagi}', label: 'Daftar Obat Pagi', example: 'Risperidone 2mg' },
+    { tag: '{daftar_obat_siang}', label: 'Daftar Obat Siang', example: 'Risperidone 2mg' },
     { tag: '{daftar_obat_malam}', label: 'Daftar Obat Malam', example: 'Clozapine 25mg' },
     { tag: '{jam_minum}', label: 'Jam Minum Obat', example: '07:00 WIB' },
+    { tag: '{diagnosa}', label: 'Diagnosa Medis', example: 'F20.0 Skizofrenia' },
     { tag: '{tanggal_kontrol}', label: 'Tgl Kontrol Dokter', example: 'Senin, 25 Sep 2026' },
     { tag: '{jam_kontrol}', label: 'Jam Praktek Poli', example: '09:00 WIB' },
     { tag: '{dokter_dpjp}', label: 'Dokter DPJP', example: 'dr. Hendra Wicaksono, Sp.KJ' },
@@ -103,7 +105,7 @@ export const NotificationTemplates = ({
             Template Notifikasi WhatsApp Terpersonalisasi
           </h2>
           <p className="text-xs text-slate-500">
-            Sesuaikan teks pesan otomatis dengan placeholder dinamis untuk obat harian, kontrol Sp.KJ, dan iterasi resep farmasi.
+            Sesuaikan teks pesan otomatis dengan placeholder dinamis untuk obat harian, kontrol Sp.KJ, dan Jadwal Iter.
           </p>
         </div>
 
