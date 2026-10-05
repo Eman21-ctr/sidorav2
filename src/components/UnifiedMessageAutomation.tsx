@@ -169,48 +169,41 @@ export const UnifiedMessageAutomation = ({
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       
-      {/* Top Hero Banner with Master Switch */}
-      <div className={`rounded-2xl p-5 sm:p-6 text-white shadow-xs transition-all duration-300 relative overflow-hidden ${
-        currentSettings.isActive 
-          ? 'bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 border border-emerald-500/30' 
-          : 'bg-gradient-to-r from-slate-800 via-slate-800 to-slate-900 border border-slate-700'
-      }`}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
-          
-          <div className="space-y-1 max-w-2xl">
-            <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <BellRing className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 shrink-0" />
-              Pengaturan Otomasi Pesan WhatsApp
-            </h2>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <BellRing className="w-5 h-5 text-emerald-600 shrink-0" />
+            Pengaturan Otomasi Pesan WhatsApp
+          </h2>
+          <p className="text-xs text-slate-500 mt-1">
+            Atur jam kirim otomatis harian, template pesan pengingat, dan integrasi WhatsApp Gateway.
+          </p>
+        </div>
 
-            <p className="text-xs sm:text-sm text-slate-300">
-              Tentukan jadwal jam kirim harian (default pukul 06:00) dan template pesan pengingat minum obat, kontrol dokter, serta iterasi resep.
-            </p>
-          </div>
-
-          {/* Master Toggle Button */}
+        {/* Master Toggle Button */}
+        <div className="flex items-center gap-2">
           <button
             onClick={handleToggleActive}
             className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer shrink-0 ${
               currentSettings.isActive
-                ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
-                : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20'
+                ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-amber-500/20'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
             }`}
           >
             <Power className="w-4 h-4" />
             {currentSettings.isActive ? 'Hentikan Otomasi Sementara' : 'Aktifkan Pengiriman Otomatis'}
           </button>
-
         </div>
-
-        {/* Saved Alert Toast */}
-        {savedAlert && (
-          <div className="mt-3 p-2 bg-emerald-500/20 border border-emerald-400/40 rounded-xl text-emerald-200 text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-200">
-            <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-            Pengaturan berhasil diperbarui dan tersimpan aman!
-          </div>
-        )}
       </div>
+
+      {/* Saved Alert Toast */}
+      {savedAlert && (
+        <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-200">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          Pengaturan berhasil diperbarui dan tersimpan aman!
+        </div>
+      )}
 
       {/* Sub-Navigation Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">

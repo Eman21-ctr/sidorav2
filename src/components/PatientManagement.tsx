@@ -19,7 +19,8 @@ import {
   UserX,
   ShieldAlert,
   Sparkles,
-  Download
+  Download,
+  Users
 } from 'lucide-react';
 import { Patient, RiskLevel, MedicationItem, SupervisionStatus } from '../types';
 import * as XLSX from 'xlsx';
@@ -355,14 +356,15 @@ export const PatientManagement = ({
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Header Section */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-            Manajemen Profil Pasien RSJ &amp; Caregiver
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <Users className="w-5 h-5 text-emerald-600 shrink-0" />
+            Data Pasien &amp; Caregiver
           </h2>
-          <p className="text-xs text-slate-500">
-            Kelola data rekam medis, kontak keluarga, jadwal obat harian, kontrol dokter, dan Jadwal Iter farmasi.
+          <p className="text-xs text-slate-500 mt-1">
+            Kelola data rekam medis, kontak keluarga/caregiver, jadwal obat, kontrol dokter, dan iterasi resep.
           </p>
         </div>
 

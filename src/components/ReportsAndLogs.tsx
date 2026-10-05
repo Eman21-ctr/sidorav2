@@ -13,7 +13,8 @@ import {
   Sparkles,
   HelpCircle,
   X,
-  Trash2
+  Trash2,
+  FileBarChart2
 } from 'lucide-react';
 import { WhatsAppMessage, ReminderCategory, MessageStatus } from '../types';
 import { exportMessagesToExcel } from '../utils/messageGenerator';
@@ -84,17 +85,18 @@ export const ReportsAndLogs = ({ messages, onDeleteAllMessages }: ReportsAndLogs
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-            Laporan &amp; Audit Log Komunikasi WhatsApp Pasien
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <FileBarChart2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            Laporan &amp; Audit Komunikasi
           </h2>
-          <p className="text-xs text-slate-500">
-            Riwayat komprehensif seluruh pesan terkirim, status terbaca, balasan konfirmasi pasien, dan kendala pengiriman.
+          <p className="text-xs text-slate-500 mt-1">
+            Riwayat komprehensif seluruh status pesan, konfirmasi balasan pasien, dan audit pengiriman.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {onDeleteAllMessages && messages.length > 0 && (
             <button
               onClick={onDeleteAllMessages}
@@ -107,10 +109,10 @@ export const ReportsAndLogs = ({ messages, onDeleteAllMessages }: ReportsAndLogs
           )}
           <button
             onClick={() => exportMessagesToExcel(filteredMessages)}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold shadow-xs transition-all flex items-center gap-1.5"
+            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-all flex items-center gap-1.5"
             title="Unduh seluruh log pesan yang terfilter dalam format Excel (.xlsx)"
           >
-            <Download className="w-4 h-4 text-emerald-400" />
+            <Download className="w-4 h-4 text-emerald-600" />
             Ekspor Excel (.xlsx)
           </button>
         </div>

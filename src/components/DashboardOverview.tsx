@@ -109,16 +109,23 @@ export const DashboardOverview = ({
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Top Banner Alert / Header Card */}
-      <div className="bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-xs relative overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white to-transparent pointer-events-none" />
-        <div className="relative z-10 space-y-1">
-          <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white">
-            Dasbor Komunikasi &amp; Kepatuhan Pasien Rawat Jalan
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <Activity className="w-5 h-5 text-emerald-600 shrink-0" />
+            Dasbor Komunikasi &amp; Kepatuhan Pasien
           </h2>
-          <p className="text-xs sm:text-sm text-slate-300">
-            Pemantauan kepatuhan minum obat harian dan jadwal kontrol dokter.
+          <p className="text-xs text-slate-500 mt-1">
+            Ringkasan pengiriman pesan pengingat harian dan pemantauan tingkat kepatuhan minum obat pasien rawat jalan.
           </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-2xs">
+            <Clock className="w-3.5 h-3.5 text-emerald-600" />
+            <span>{formatIndoDate(todayStr)}</span>
+          </div>
         </div>
       </div>
 
