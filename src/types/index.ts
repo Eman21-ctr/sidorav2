@@ -64,11 +64,13 @@ export interface Patient {
     konfirmasiKehadiran?: 'belum_konfirmasi' | 'akan_hadir' | 'minta_reschedule';
   };
 
-  // Daftar Jadwal Kontrol Dokter Multiple (max 3 per periode resep)
+  // Daftar Jadwal Kontrol Dokter (Maks 3 per periode)
   jadwalKontrolList?: Array<{
     id: string;       // unique id misal "ktrl-1"
     tanggal: string;  // "YYYY-MM-DD"
     jam: string;      // "09:00"
+    dokter?: string;  // Dokter yang bertugas
+    poli?: string;    // Poliklinik tujuan
     label?: string;   // Opsional: "Kontrol 1", "Kontrol 2", dst
   }>;
 
@@ -86,12 +88,13 @@ export interface Patient {
     statusPengambilan?: 'belum_diambil' | 'sudah_diambil';
   };
 
-  // Daftar Jadwal Iter Multiple (max 3 per periode resep - iter 1, 2, 3)
+  // Daftar Jadwal Iter Multiple (Maks 3: Iter 1, Iter 2, Iter 3)
   jadwalIterList?: Array<{
     id: string;       // "iter-1", "iter-2", "iter-3"
     nomorIter: number; // 1, 2, 3
     tanggal: string;   // "YYYY-MM-DD"
-    nomorResep: string;
+    jam?: string;      // "08:30"
+    nomorResep?: string;
     statusPengambilan: 'belum_diambil' | 'sudah_diambil';
     label?: string;    // Opsional: "Iter 1", "Iter 2", "Iter 3"
   }>;
@@ -173,7 +176,7 @@ export interface AutomationSettings {
     enabled: boolean;
     jamKirimPagi: string;   // default "06:00"
     jamKirimSiang: string;  // default "12:00"
-    jamKirimMalam: string;  // default "19:00"
+    jamKirimMalam: string;  // default "18:00"
     targetPenerima: 'caregiver' | 'pasien' | 'keduanya';
   };
 

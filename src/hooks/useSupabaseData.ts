@@ -124,18 +124,20 @@ export function useSupabaseData(): SupabaseDataState {
       // Use data from Supabase
       setPatients(dbPatients);
       if (dbTemplates.length > 0) {
-        // Check if templates need upgrade (e.g. still generic without {nama_pasien} or missing siang/malam)
+        // Check if templates need upgrade to simple redaksi
         const hasMissingObatTemplates = !dbTemplates.some(t => t.id === 'tmpl-obat-siang') || !dbTemplates.some(t => t.id === 'tmpl-obat-malam');
         const hasOldGenericObat = dbTemplates.some(t => t.category === 'minum_obat' && !t.templateText.includes('{nama_pasien}'));
         const hasOldGenericKontrol = dbTemplates.some(t => t.category === 'kontrol_dokter' && !t.templateText.includes('{nama_pasien}'));
-        const hasOldGenericIter = dbTemplates.some(t => t.id === 'tmpl-iter-resep' && !t.templateText.includes('{ketentuan_kehadiran_iter}'));
+        const hasOldGenericIter = dbTemplates.some(t => t.id === 'tmpl-iter-resep' && (!t.templateText.includes('{ketentuan_kehadiran_iter}') || !t.templateText.includes('{iter_ke}')));
+        const hasOldVerboseFields = dbTemplates.some(t => t.templateText.includes('{nomor_rm}') || t.templateText.includes('{dokter_dpjp}'));
 
-        if (hasMissingObatTemplates || hasOldGenericObat || hasOldGenericKontrol || hasOldGenericIter) {
-          console.log('[Supabase] Mengupgrade template ke format spesifik database pasien & Jadwal Iter...');
+        if (hasMissingObatTemplates || hasOldGenericObat || hasOldGenericKontrol || hasOldGenericIter || hasOldVerboseFields) {
+          console.log('[Supabase] Mengupgrade template ke format simpel terbaru...');
           const upgradedTemplates = INITIAL_TEMPLATES.map(initTmpl => {
             const existing = dbTemplates.find(t => t.id === initTmpl.id);
             if (!existing) return initTmpl;
-            if (initTmpl.id === 'tmpl-iter-resep' && !existing.templateText.includes('{ketentuan_kehadiran_iter}')) return initTmpl;
+            if (existing.templateText.includes('{nomor_rm}') || existing.templateText.includes('{dokter_dpjp}')) return initTmpl;
+            if (initTmpl.id === 'tmpl-iter-resep' && (!existing.templateText.includes('{ketentuan_kehadiran_iter}') || !existing.templateText.includes('{iter_ke}'))) return initTmpl;
             if (!existing.templateText.includes('{nama_pasien}')) return initTmpl;
             return existing;
           });

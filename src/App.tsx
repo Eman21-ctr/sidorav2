@@ -251,7 +251,7 @@ export default function App() {
     syncMessages(newMessages);
 
     // Update automation stats
-    const timeLabel = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+    const timeLabel = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WITA';
     const updatedSettings = {
       ...automationSettings,
       terakhirDieksekusi: `Hari ini, ${timeLabel} (Simulasi Pengiriman Massal)`,
@@ -417,7 +417,7 @@ export default function App() {
           recipientPhone,
           recipientType: automationSettings.obat.targetPenerima === 'pasien' ? 'Pasien' : 'Caregiver',
           category: 'minum_obat',
-          title: `Pengingat Minum Obat ${waktuLabel} (${jamKirim} WIB)`,
+          title: `Pengingat Minum Obat ${waktuLabel} (${jamKirim} WITA)`,
           body,
           scheduledAt: `${todayDateStr} ${jamKirim}`,
           sentAt: nowIso,
@@ -514,7 +514,7 @@ export default function App() {
       const allMessages = [...newMessages, ...messages];
       setMessages(allMessages);
 
-      const timeLabel = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+      const timeLabel = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WITA';
       const updatedSettings = {
         ...automationSettings,
         terakhirDieksekusi: `Hari ini, ${timeLabel} (${source === 'auto' ? 'Otomatis' : 'Demo Otomasi'})`,
@@ -542,7 +542,7 @@ export default function App() {
       setAutoToast({
         visible: true,
         title: 'Sistem Otomasi Berhasil Mengirimkan Pesan!',
-        message: `${newMessages.length} pesan pengingat (Minum Obat 3x sehari: ${automationSettings.obat.jamKirimPagi}, ${automationSettings.obat.jamKirimSiang}, ${automationSettings.obat.jamKirimMalam} WIB – Kontrol Dokter & Iter Farmasi) telah otomatis dikirimkan ke WhatsApp pasien & caregiver.`,
+        message: `${newMessages.length} pesan pengingat (Minum Obat 3x sehari: ${automationSettings.obat.jamKirimPagi}, ${automationSettings.obat.jamKirimSiang}, ${automationSettings.obat.jamKirimMalam} WITA – Kontrol Dokter & Iter Farmasi) telah otomatis dikirimkan ke WhatsApp pasien & caregiver.`,
         count: newMessages.length,
       });
 

@@ -6,173 +6,95 @@ export const INITIAL_TEMPLATES: MessageTemplate[] = [
     category: 'minum_obat',
     kode: 'OBAT_PAGI',
     nama: 'Pengingat Minum Obat Pagi 🌅',
-    deskripsi: 'Pesan dikirim sesi pagi, berisi daftar obat pagi beserta dosis dan aturan pakai dari database pasien.',
+    deskripsi: 'Pesan simpel pengingat minum obat pagi sesuai data pasien.',
     defaultTime: '06:00',
     active: true,
-    templateText: `🌅 *PENGINGAT MINUM OBAT PAGI*
-*{nama_rsj}*
+    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
 
-Selamat pagi, *{nama_panggilan}*.
-
-Mengingatkan jadwal minum obat pagi untuk pasien:
-👤 *Nama Pasien:* {nama_pasien}
-📋 *No. RM:* {nomor_rm}
-👨‍⚕️ *Dokter DPJP:* {dokter_dpjp}
-⏰ *Waktu Minum:* {jam_minum}
-
-💊 *Daftar Obat Pagi & Aturan Pakai:*
+Mengingatkan jadwal minum obat pagi untuk *{nama_pasien}*:
 {daftar_obat_pagi}
+⏰ Waktu minum: {jam_minum}
 
-Mohon pastikan obat diminum teratur sesudah makan sesuai anjuran dokter demi kestabilan dan pemulihan kesehatan {nama_pasien}.
-
-Jika ada keluhan efek samping atau pertanyaan, hubungi kami:
-📞 *Hotline RSJ:* {hotline_rsj}
-
-Terima kasih atas ketelatenan {nama_panggilan} mendampingi pasien. Semoga lekas pulih dan sehat selalu. 🙏`,
+Mohon pastikan obatnya diminum ya. Terima kasih dan salam sehat selalu. 🙏`,
   },
   {
     id: 'tmpl-obat-siang',
     category: 'minum_obat',
     kode: 'OBAT_SIANG',
     nama: 'Pengingat Minum Obat Siang ☀️',
-    deskripsi: 'Pesan dikirim sesi siang, berisi daftar obat siang beserta dosis dan aturan pakai dari database pasien.',
+    deskripsi: 'Pesan simpel pengingat minum obat siang sesuai data pasien.',
     defaultTime: '12:00',
     active: true,
-    templateText: `☀️ *PENGINGAT MINUM OBAT SIANG*
-*{nama_rsj}*
+    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
 
-Selamat siang, *{nama_panggilan}*.
-
-Mengingatkan jadwal minum obat siang untuk pasien:
-👤 *Nama Pasien:* {nama_pasien}
-📋 *No. RM:* {nomor_rm}
-👨‍⚕️ *Dokter DPJP:* {dokter_dpjp}
-⏰ *Waktu Minum:* {jam_minum}
-
-💊 *Daftar Obat Siang & Aturan Pakai:*
+Mengingatkan jadwal minum obat siang untuk *{nama_pasien}*:
 {daftar_obat_siang}
+⏰ Waktu minum: {jam_minum}
 
-Mohon dipastikan obat diminum tepat waktu setelah makan siang sesuai petunjuk {dokter_dpjp}.
-
-📞 *Hotline RSJ:* {hotline_rsj}
-
-Terima kasih dan salam sehat selalu. 🙏`,
+Mohon pastikan obatnya diminum ya. Terima kasih dan salam sehat selalu. 🙏`,
   },
   {
     id: 'tmpl-obat-malam',
     category: 'minum_obat',
     kode: 'OBAT_MALAM',
     nama: 'Pengingat Minum Obat Malam 🌙',
-    deskripsi: 'Pesan dikirim sesi malam, berisi daftar obat malam beserta dosis dan aturan pakai dari database pasien.',
-    defaultTime: '19:00',
+    deskripsi: 'Pesan simpel pengingat minum obat malam sesuai data pasien.',
+    defaultTime: '18:00',
     active: true,
-    templateText: `🌙 *PENGINGAT MINUM OBAT MALAM*
-*{nama_rsj}*
+    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
 
-Selamat malam, *{nama_panggilan}*.
-
-Mengingatkan jadwal minum obat malam sebelum beristirahat untuk pasien:
-👤 *Nama Pasien:* {nama_pasien}
-📋 *No. RM:* {nomor_rm}
-👨‍⚕️ *Dokter DPJP:* {dokter_dpjp}
-⏰ *Waktu Minum:* {jam_minum}
-
-💊 *Daftar Obat Malam & Aturan Pakai:*
+Mengingatkan jadwal minum obat malam untuk *{nama_pasien}*:
 {daftar_obat_malam}
+⏰ Waktu minum: {jam_minum}
 
-Mohon diminum sebelum tidur sesuai dosis anjuran. Istirahat yang cukup sangat mendukung proses pemulihan {nama_pasien}.
-
-📞 *Hotline RSJ:* {hotline_rsj}
-
-Selamat beristirahat, terima kasih atas dedikasi dan perhatian {nama_panggilan}. 🙏`,
+Mohon pastikan obatnya diminum sebelum beristirahat ya. Terima kasih dan selamat beristirahat. 🙏`,
   },
   {
     id: 'tmpl-kontrol-dokter',
     category: 'kontrol_dokter',
     kode: 'KONTROL_DOKTER',
-    nama: 'Pengingat Jadwal Kontrol Dokter',
-    deskripsi: 'Pesan santun mengingatkan tanggal jadwal kontrol dokter spesialis jiwa di RSJ Naimata.',
+    nama: 'Pengingat Jadwal Kontrol',
+    deskripsi: 'Pesan simpel pengingat jadwal kontrol pasien.',
     defaultTime: '06:00',
     active: true,
-    templateText: `🗓 *PENGINGAT JADWAL KONTROL DOKTER*
-*{nama_rsj}*
+    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
 
-Selamat pagi, *{nama_panggilan}*.
+Mengingatkan jadwal kontrol untuk *{nama_pasien}*:
+📅 Tanggal: {tanggal_kontrol}
+⏰ Jam: {jam_kontrol} WITA
 
-Kami menginformasikan jadwal konsultasi dan evaluasi rutin untuk pasien:
-👤 *Nama Pasien:* {nama_pasien}
-📋 *No. RM:* {nomor_rm}
-📅 *Tanggal Kontrol:* {tanggal_kontrol}
-⏰ *Jam Layanan:* {jam_kontrol}
-🏥 *Poliklinik:* {poliklinik}
-👨‍⚕️ *Dokter Pemeriksa:* {dokter_dpjp}
-
-Mohon hadir 15 menit sebelum jam pelayanan dengan membawa kartu identitas/BPJS dan sisa obat (jika ada).
-
-Jika berhalangan hadir atau ingin konfirmasi jadwal, hubungi kami:
-📞 *Hotline RSJ:* {hotline_rsj}
-
-Terima kasih atas kerjasamanya. Salam sehat. 🙏`,
+Mohon hadir tepat waktu ya. Terima kasih dan salam sehat selalu. 🙏`,
   },
   {
     id: 'tmpl-iter-resep',
     category: 'iter_resep',
     kode: 'ITER_RESEP',
     nama: 'Pengingat Jadwal Iter',
-    deskripsi: 'Pesan pengingat Jadwal Iter di farmasi (wajib tepat tanggal: tidak boleh lebih awal/terlambat; iter 1-2 boleh diwakili, iter 3 wajib bersama pasien).',
+    deskripsi: 'Pesan simpel pengingat jadwal iterasi pengambilan obat farmasi.',
     defaultTime: '06:00',
     active: true,
-    templateText: `🔄 *PENGINGAT JADWAL ITER*
-Farmasi *{nama_rsj}*
+    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
 
-Selamat pagi, *{nama_panggilan}*.
+Mengingatkan jadwal pengambilan obat (*{iter_ke}*) untuk *{nama_pasien}*:
+📅 Tanggal: {tanggal_iter}
 
-Mengingatkan jadwal pengambilan obat lanjutan (*Jadwal Iter*) untuk pasien:
-👤 *Nama Pasien:* {nama_pasien}
-📋 *No. RM:* {nomor_rm}
-📑 *No. Resep:* {nomor_resep}
-📅 *Tanggal Pengambilan:* {tanggal_iter}
-🔢 *Status Iterasi:* {iter_ke} (Sisa: {sisa_iter})
-🏥 *Lokasi:* Farmasi Rawat Jalan {nama_rsj}
-
-⚠️ *KETENTUAN PENTING PENGAMBILAN JADWAL ITER:*
-1. 🗓 *Wajib Tepat Tanggal:*
-Pengambilan obat *HARUS tepat pada tanggal yang ditentukan ({tanggal_iter})*. Tidak diperkenankan mengambil lebih awal ataupun terlambat demi kepatuhan terapi dan ketersediaan stok obat.
-
-2. 👥 *Ketentuan Kehadiran Pasien:*
 {ketentuan_kehadiran_iter}
 
-📄 *Berkas yang Wajib Dibawa ke Farmasi:*
-• Kartu Identitas Pasien (KTP / Kartu BPJS Asli)
-• Kartu Berobat Pasien RSJ Naimata
-• Salinan / Copy Resep Iter asli yang masih berlaku
-
-Jika ada kendala mendesak terkait jadwal pengambilan obat, silakan hubungi:
-📞 *Hotline Farmasi/RSJ:* {hotline_rsj}
-
-Terima kasih atas ketertiban dan kerjasamanya demi pemulihan optimal {nama_pasien}. Salam sehat. 🙏`,
+Mohon mengambil obat tepat pada tanggal yang ditentukan ya. Terima kasih dan salam sehat selalu. 🙏`,
   },
   {
     id: 'tmpl-edukasi',
     category: 'edukasi_rsj',
     kode: 'EDUKASI_KELUARGA',
     nama: 'Pesan Dukungan Semangat Keluarga',
-    deskripsi: 'Pesan singkat penyemangat dan apresiasi bagi keluarga/caregiver dari RSJ Naimata.',
+    deskripsi: 'Pesan singkat penyemangat dan apresiasi bagi keluarga/pendamping dari RSJ Naimata.',
     defaultTime: '06:00',
     active: true,
-    templateText: `💙 *PESAN DUKUNGAN KELUARGA & CAREGIVER*
-*{nama_rsj}*
+    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
 
-Selamat pagi, *{nama_panggilan}*.
+Terima kasih atas perhatian dan ketelatenan Anda dalam mendampingi pengobatan *{nama_pasien}*. Semangat dan kebersamaan keluarga adalah kunci utama proses pemulihan.
 
-Peran dan ketelatenan Anda dalam mendampingi *{nama_pasien}* (No. RM: {nomor_rm}) adalah kunci utama dalam proses pemulihan dan kestabilan kesehatan jiwa.
-
-Kepatuhan minum obat dan komunikasi yang hangat di rumah sangat berharga bagi pemulihan {nama_pasien}. Tetap semangat, jaga kesehatan fisik dan mental Anda juga sebagai pendamping.
-
-Kami segenap tim medis *{nama_rsj}* senantiasa siap mendukung:
-📞 *Hotline Konsultasi RSJ:* {hotline_rsj}
-
-Terima kasih atas dedikasi dan kasih sayang yang luar biasa. 🙏`,
+Salam sehat selalu. 🙏`,
   },
 ];
 
@@ -914,7 +836,7 @@ export const INITIAL_AUTOMATION_SETTINGS: AutomationSettings = {
     enabled: true,
     jamKirimPagi: '06:00',   // Jam 6 pagi setiap hari
     jamKirimSiang: '12:00',  // Jam 12 siang
-    jamKirimMalam: '19:00',  // Jam 7 malam
+    jamKirimMalam: '18:00',  // Jam 6 sore / malam
     targetPenerima: 'caregiver',
   },
   kontrol: {
@@ -935,6 +857,6 @@ export const INITIAL_AUTOMATION_SETTINGS: AutomationSettings = {
     h0: true,  // Hari H
     targetPenerima: 'caregiver',
   },
-  terakhirDieksekusi: 'Hari ini, 06:00 WIB (Otomatis Berjalan)',
+  terakhirDieksekusi: 'Hari ini, 06:00 WITA (Otomatis Berjalan)',
   totalPesanTerkirimOtomatis: 28,
 };

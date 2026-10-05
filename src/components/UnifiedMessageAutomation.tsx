@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   BellRing, 
   Power, 
@@ -51,8 +51,31 @@ export const UnifiedMessageAutomation = ({
   onTriggerManualRun,
   onNavigateToSimulator,
 }: UnifiedMessageAutomationProps) => {
-  // Local state for settings form
-  const [currentSettings, setCurrentSettings] = useState<AutomationSettings>(settings);
+  // Local state for settings form with defaults 06:00, 12:00, 18:00
+  const [currentSettings, setCurrentSettings] = useState<AutomationSettings>(() => ({
+    ...settings,
+    obat: {
+      ...settings?.obat,
+      jamKirimPagi: settings?.obat?.jamKirimPagi || '06:00',
+      jamKirimSiang: settings?.obat?.jamKirimSiang || '12:00',
+      jamKirimMalam: settings?.obat?.jamKirimMalam || '18:00',
+    },
+  }));
+
+  useEffect(() => {
+    if (settings) {
+      setCurrentSettings({
+        ...settings,
+        obat: {
+          ...settings.obat,
+          jamKirimPagi: settings.obat?.jamKirimPagi || '06:00',
+          jamKirimSiang: settings.obat?.jamKirimSiang || '12:00',
+          jamKirimMalam: settings.obat?.jamKirimMalam || '18:00',
+        },
+      });
+    }
+  }, [settings]);
+
   const [activeSubTab, setActiveSubTab] = useState<'jadwal' | 'template' | 'gateway'>('jadwal');
   const [selectedTemplateCategory, setSelectedTemplateCategory] = useState<'minum_obat' | 'kontrol_dokter' | 'iter_resep'>('minum_obat');
   const [obatSubSesi, setObatSubSesi] = useState<'pagi' | 'siang' | 'malam'>('pagi');
@@ -232,15 +255,7 @@ export const UnifiedMessageAutomation = ({
       {activeSubTab === 'jadwal' && (
         <div className="space-y-6">
           
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-emerald-950 text-xs sm:text-sm flex items-start gap-3">
-            <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
-            <div>
-              <strong className="font-bold text-emerald-900 block text-sm">Prinsip Pengiriman Otomatis:</strong>
-              Cukup simpan konfigurasi ini 1 kali. Setiap hari pada jam <strong>{currentSettings.obat.jamKirimPagi}</strong>, <strong>{currentSettings.obat.jamKirimSiang}</strong>, dan <strong>{currentSettings.obat.jamKirimMalam}</strong>, 
-              sistem membaca seluruh data pasien rawat jalan aktif dan langsung menyalurkan pesan pengingat ke nomor WhatsApp tujuan. 
-              Anda tidak perlu menekan tombol kirim setiap hari.
-            </div>
-          </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
@@ -284,14 +299,14 @@ export const UnifiedMessageAutomation = ({
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <input
                       type="time"
-                      value={currentSettings.obat.jamKirimPagi}
+                      value={currentSettings.obat.jamKirimPagi || '06:00'}
                       onChange={(e) => setCurrentSettings({
                         ...currentSettings,
                         obat: { ...currentSettings.obat, jamKirimPagi: e.target.value }
                       })}
                       className="px-3 py-1.5 rounded-lg border border-slate-300 font-mono text-xs font-bold text-slate-900 focus:ring-1 focus:ring-emerald-500"
                     />
-                    <span className="text-[11px] text-slate-500 font-medium">WIB</span>
+                    <span className="text-[11px] text-slate-500 font-medium">WITA</span>
                   </div>
                 </div>
 
@@ -304,14 +319,14 @@ export const UnifiedMessageAutomation = ({
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <input
                       type="time"
-                      value={currentSettings.obat.jamKirimSiang}
+                      value={currentSettings.obat.jamKirimSiang || '12:00'}
                       onChange={(e) => setCurrentSettings({
                         ...currentSettings,
                         obat: { ...currentSettings.obat, jamKirimSiang: e.target.value }
                       })}
                       className="px-3 py-1.5 rounded-lg border border-slate-300 font-mono text-xs font-bold text-slate-900 focus:ring-1 focus:ring-emerald-500"
                     />
-                    <span className="text-[11px] text-slate-500 font-medium">WIB</span>
+                    <span className="text-[11px] text-slate-500 font-medium">WITA</span>
                   </div>
                 </div>
 
@@ -324,25 +339,15 @@ export const UnifiedMessageAutomation = ({
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <input
                       type="time"
-                      value={currentSettings.obat.jamKirimMalam}
+                      value={currentSettings.obat.jamKirimMalam || '18:00'}
                       onChange={(e) => setCurrentSettings({
                         ...currentSettings,
                         obat: { ...currentSettings.obat, jamKirimMalam: e.target.value }
                       })}
                       className="px-3 py-1.5 rounded-lg border border-slate-300 font-mono text-xs font-bold text-slate-900 focus:ring-1 focus:ring-emerald-500"
                     />
-                    <span className="text-[11px] text-slate-500 font-medium">WIB</span>
+                    <span className="text-[11px] text-slate-500 font-medium">WITA</span>
                   </div>
-                </div>
-
-                <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[11px] text-emerald-800 space-y-1">
-                  <div className="font-semibold text-emerald-900 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    Pengingat Rutin 3x Sehari
-                  </div>
-                  <p className="text-emerald-700 leading-relaxed">
-                    Pesan dikirim pagi, siang, dan malam sesuai jadwal minum obat pasien agar kepatuhan konsumsi obat meningkat.
-                  </p>
                 </div>
 
                 <div>
@@ -410,7 +415,7 @@ export const UnifiedMessageAutomation = ({
                       })}
                       className="px-3 py-1.5 rounded-lg border border-slate-300 font-mono text-xs font-bold text-slate-900 focus:ring-1 focus:ring-teal-500"
                     />
-                    <span className="text-[11px] text-slate-500">WIB</span>
+                    <span className="text-[11px] text-slate-500">WITA</span>
                   </div>
                 </div>
 
@@ -539,7 +544,7 @@ export const UnifiedMessageAutomation = ({
                     })}
                     className="px-3 py-1.5 rounded-lg border border-slate-300 font-mono text-xs font-bold text-slate-900 focus:ring-1 focus:ring-sky-500"
                   />
-                  <span className="text-[11px] text-slate-500">WIB</span>
+                  <span className="text-[11px] text-slate-500">WITA</span>
                 </div>
 
                 <div>
@@ -828,7 +833,7 @@ export const UnifiedMessageAutomation = ({
                       </button>
                     ))}
                   </div>
-                  <span className="text-[11px] text-slate-400">({currentSettings.obat[obatSubSesi === 'pagi' ? 'jamKirimPagi' : obatSubSesi === 'siang' ? 'jamKirimSiang' : 'jamKirimMalam']} WIB)</span>
+                  <span className="text-[11px] text-slate-400">({currentSettings.obat[obatSubSesi === 'pagi' ? 'jamKirimPagi' : obatSubSesi === 'siang' ? 'jamKirimSiang' : 'jamKirimMalam'] || (obatSubSesi === 'pagi' ? '06:00' : obatSubSesi === 'siang' ? '12:00' : '18:00')} WITA)</span>
                 </div>
 
                 {/* Info variabel khusus obat */}
@@ -867,7 +872,7 @@ export const UnifiedMessageAutomation = ({
                 {/* Textarea */}
                 <div className="space-y-2">
                   <label className="font-bold text-slate-800 text-xs block">
-                    Isi Pesan WhatsApp — Obat {obatSubSesi === 'pagi' ? '🌅 Pagi' : obatSubSesi === 'siang' ? '☀️ Siang' : '🌙 Malam'} ({currentEditingTemplate?.defaultTime} WIB):
+                    Isi Pesan WhatsApp — Obat {obatSubSesi === 'pagi' ? '🌅 Pagi' : obatSubSesi === 'siang' ? '☀️ Siang' : '🌙 Malam'} ({currentEditingTemplate?.defaultTime || (obatSubSesi === 'pagi' ? '06:00' : obatSubSesi === 'siang' ? '12:00' : '18:00')} WITA):
                   </label>
                   <textarea
                     rows={12}
@@ -917,14 +922,13 @@ export const UnifiedMessageAutomation = ({
                     {[
                       '{nama_panggilan}',
                       '{nama_pasien}',
-                      '{nomor_rm}',
                       '{tanggal_kontrol}',
                       '{jam_kontrol}',
+                      '{hotline_rsj}',
+                      '{nama_rsj}',
                       '{dokter_dpjp}',
                       '{poliklinik}',
-                      '{diagnosa}',
-                      '{hotline_rsj}',
-                      '{nama_rsj}'
+                      '{nomor_rm}',
                     ].map(v => (
                       <button
                         key={v}
@@ -977,17 +981,6 @@ export const UnifiedMessageAutomation = ({
             {/* ======= JADWAL ITER ======= */}
             {selectedTemplateCategory === 'iter_resep' && (
               <div className="space-y-5">
-                {/* Panduan Ketentuan Jadwal Iter RSJ */}
-                <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-xl text-xs space-y-1.5 text-amber-900">
-                  <div className="font-bold flex items-center gap-1.5 text-amber-950">
-                    <span>📌</span> Ketentuan Resmi Jadwal Iter RSJ Naimata:
-                  </div>
-                  <ul className="list-disc list-inside space-y-1 text-[11px] leading-relaxed pl-1">
-                    <li><strong>Wajib Tepat Tanggal:</strong> Pengambilan obat harus sesuai tanggal yang ditentukan (tidak boleh lebih awal atau terlambat).</li>
-                    <li><strong>Iter ke-1 dan ke-2:</strong> Boleh diwakili oleh keluarga/caregiver (membawa kartu berobat & copy resep).</li>
-                    <li><strong>Iter ke-3:</strong> <strong>Wajib bersama pasien</strong> (pasien hadir langsung untuk evaluasi dokter dan pembaharuan resep).</li>
-                  </ul>
-                </div>
 
                 <div className="p-3 bg-sky-50 border border-sky-200 rounded-xl text-xs">
                   <span className="font-bold text-sky-800 block mb-1.5">🔄 Variabel Template Jadwal Iter (Klik untuk sisipkan):</span>

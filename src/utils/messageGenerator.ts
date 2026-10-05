@@ -31,6 +31,16 @@ export function generatePersonalizedMessage(
     customRecipientName?: string;
     customRecipientPhone?: string;
     customPanggilan?: string;
+    customJadwal?: {
+      tanggal?: string;
+      jam?: string;
+      dokter?: string;
+      poli?: string;
+      iterKe?: number;
+      nomorResep?: string;
+      totalIterasi?: number;
+      sisaIterasi?: number;
+    };
   }
 ): { body: string; recipientName: string; recipientPhone: string } {
   const isCaregiver = recipientType === 'caregiver' && patient.caregiver.noTelepon;
@@ -55,7 +65,20 @@ export function generatePersonalizedMessage(
     ? medsForTime.map(m => `${m.namaObat} ${m.dosis} (${m.aturanPakai})`).join(', ')
     : patient.obatRutin.map(m => `${m.namaObat} ${m.dosis}`).join(', ');
 
-  const jamMinum = patient.jamMinumObat[time] || (time === 'pagi' ? '07:00' : time === 'siang' ? '12:30' : '20:00');
+  const jamMinum = patient.jamMinumObat[time] || (time === 'pagi' ? '06:00' : time === 'siang' ? '12:00' : '18:00');
+
+  // Schedule overrides if provided
+  const targetTglKontrol = options?.customJadwal?.tanggal || patient.jadwalKontrol?.tanggal || '';
+  const targetJamKontrol = options?.customJadwal?.jam || patient.jadwalKontrol?.jam || '09:00';
+  const targetDokterKontrol = options?.customJadwal?.dokter || patient.jadwalKontrol?.dokter || patient.dokterDPJP;
+  const targetPoliKontrol = options?.customJadwal?.poli || patient.jadwalKontrol?.poli || patient.poliklinik;
+
+  const targetTglIter = options?.customJadwal?.tanggal || patient.jadwalIter?.tanggalIter || '';
+  const targetNomorResep = options?.customJadwal?.nomorResep || patient.jadwalIter?.nomorResep || '';
+  const totalIter = options?.customJadwal?.totalIterasi || patient.jadwalIter?.totalIterasi || 3;
+  const sisaIter = options?.customJadwal?.sisaIterasi ?? patient.jadwalIter?.sisaIterasi ?? 1;
+  const iterKe = options?.customJadwal?.iterKe ?? Math.max(1, totalIter - sisaIter + 1);
+  const isIter3OrMore = iterKe >= 3;
 
   let text = template.templateText;
 
@@ -80,52 +103,38 @@ export function generatePersonalizedMessage(
       if (meds.length === 0) return 'Tidak ada obat malam (sesuai petunjuk dokter)';
       return meds.map(m => `• ${m.namaObat} ${m.dosis} – ${m.aturanPakai}`).join('\n');
     })(),
-    '{jam_minum}': `${jamMinum} WIB`,
-    '{tanggal_kontrol}': formatIndonesianDate(patient.jadwalKontrol.tanggal),
-    '{jam_kontrol}': patient.jadwalKontrol.jam,
+    '{jam_minum}': `${jamMinum} WITA`,
+    '{tanggal_kontrol}': formatIndonesianDate(targetTglKontrol),
+    '{jam_kontrol}': targetJamKontrol,
     '{dokter_dpjp}': patient.dokterDPJP,
     '{poliklinik}': patient.poliklinik,
-    '{nomor_resep}': patient.jadwalIter.nomorResep,
-    '{tanggal_iter}': formatIndonesianDate(patient.jadwalIter.tanggalIter),
-    '{sisa_iter}': `${patient.jadwalIter.sisaIterasi}x dari total ${patient.jadwalIter.totalIterasi}x pengulangan`,
-    '{iter_ke}': (() => {
-      const totalIter = patient.jadwalIter.totalIterasi || 3;
-      const sisaIter = patient.jadwalIter.sisaIterasi || 1;
-      const iterKe = Math.max(1, totalIter - sisaIter + 1);
-      return `Iter ke-${iterKe}`;
-    })(),
+    '{nomor_resep}': targetNomorResep,
+    '{tanggal_iter}': formatIndonesianDate(targetTglIter),
+    '{sisa_iter}': `${sisaIter}x dari total ${totalIter}x pengulangan`,
+    '{iter_ke}': `Iter ke-${iterKe}`,
     '{ketentuan_kehadiran_iter}': (() => {
-      const totalIter = patient.jadwalIter.totalIterasi || 3;
-      const sisaIter = patient.jadwalIter.sisaIterasi || 1;
-      const iterKe = Math.max(1, totalIter - sisaIter + 1);
-      const isIter3OrMore = iterKe >= 3;
       if (isIter3OrMore) {
-        return `⚠️ *WAJIB BERSAMA PASIEN:* Pada jadwal iter ke-${iterKe} ini, pasien Sdr/i *${patient.nama} WAJIB hadir langsung* ke RSJ untuk pemeriksaan/evaluasi dokter dan pembaharuan resep (TIDAK BOLEH diwakilkan).`;
+        return `⚠️ *Catatan:* Karena ini iter ke-${iterKe}, pengambilan obat *wajib datang bersama pasien langsung* ke rumah sakit.`;
       }
-      const catatanIter3 = ` _(Catatan: Iter ke-3 berikutnya wajib bersama pasien langsung.)_`;
-      return `✅ *BOLEH DIWAKILI:* Jadwal iter ke-${iterKe} ini *boleh diwakili* oleh keluarga/caregiver dengan membawa kartu berobat dan copy resep asli.${catatanIter3}`;
+      return `ℹ️ *Catatan:* Pengambilan obat boleh diwakilkan oleh keluarga/caregiver (pada iter ke-3 wajib bersama pasien).`;
     })(),
-    '{ketentuan_tanggal_iter}': `🗓 *WAJIB TEPAT TANGGAL:* Pengambilan obat *HARUS tepat pada tanggal yang ditentukan (${formatIndonesianDate(patient.jadwalIter.tanggalIter)})*. Tidak boleh diambil lebih awal atau terlambat.`,
+    '{ketentuan_tanggal_iter}': `🗓 *Tanggal Pengambilan:* ${formatIndonesianDate(targetTglIter)} (mohon tepat tanggal).`,
     '{aturan_jadwal_iter}': (() => {
-      const totalIter = patient.jadwalIter.totalIterasi || 3;
-      const sisaIter = patient.jadwalIter.sisaIterasi || 1;
-      const iterKe = Math.max(1, totalIter - sisaIter + 1);
-      const isIter3OrMore = iterKe >= 3;
       const kehadiran = isIter3OrMore
-        ? `⚠️ *WAJIB BERSAMA PASIEN:* Pasien *${patient.nama} WAJIB hadir langsung* ke RSJ untuk evaluasi dokter (tidak boleh diwakilkan).`
-        : `✅ *BOLEH DIWAKILI:* Jadwal iter ke-${iterKe} ini boleh diwakili oleh keluarga/caregiver.`;
-      return `1. 🗓 *Wajib Tepat Tanggal:* Obat HARUS diambil tepat pada tanggal *${formatIndonesianDate(patient.jadwalIter.tanggalIter)}* (tidak boleh lebih awal atau terlambat).\n2. 👥 *Ketentuan Kehadiran (Iter ke-${iterKe}):* ${kehadiran}`;
+        ? `Pengambilan obat iter ke-${iterKe} *wajib bersama pasien langsung*.`
+        : `Pengambilan obat iter ke-${iterKe} boleh diwakilkan (pada iter ke-3 wajib bersama pasien).`;
+      return `1. 🗓 *Tanggal:* ${formatIndonesianDate(targetTglIter)}\n2. 👥 *Ketentuan:* ${kehadiran}`;
     })(),
     '{daftar_obat}': medsListStr,
     '{diagnosa}': patient.diagnosaMedis || '-',
     '{diagnosa_medis}': patient.diagnosaMedis || '-',
     '{alamat}': patient.alamat || '-',
     '{usia}': `${patient.usia} tahun`,
-    '{jam_minum_pagi}': `${patient.jamMinumObat.pagi || '07:00'} WIB`,
-    '{jam_minum_siang}': `${patient.jamMinumObat.siang || '12:30'} WIB`,
-    '{jam_minum_malam}': `${patient.jamMinumObat.malam || '20:00'} WIB`,
-    '{dokter_kontrol}': patient.jadwalKontrol.dokter || patient.dokterDPJP,
-    '{poli_kontrol}': patient.jadwalKontrol.poli || patient.poliklinik,
+    '{jam_minum_pagi}': `${patient.jamMinumObat.pagi || '06:00'} WITA`,
+    '{jam_minum_siang}': `${patient.jamMinumObat.siang || '12:00'} WITA`,
+    '{jam_minum_malam}': `${patient.jamMinumObat.malam || '18:00'} WITA`,
+    '{dokter_kontrol}': targetDokterKontrol,
+    '{poli_kontrol}': targetPoliKontrol,
     '{hotline_rsj}': RSJ_INFO.hotlineWA,
     '{nama_rsj}': RSJ_INFO.nama,
   };

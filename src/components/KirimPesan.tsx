@@ -125,7 +125,7 @@ function buildDailyQueue(
           recipientPhone: msg.recipientPhone,
           recipientType: recipType === 'caregiver' ? 'Caregiver' : 'Pasien',
           category: 'minum_obat',
-          sessionLabel: `${label} (${jam} WIB)`,
+          sessionLabel: `${label} (${jam} WITA)`,
           messageBody: msg.body,
           status: 'pending',
         });
@@ -157,10 +157,18 @@ function buildDailyQueue(
       else if (diff === 0) tag = 'Hari H (Hari Ini!)';
       else return;
 
-      const msgKontrol = generatePersonalizedMessage(tmplKontrol, patient, 'caregiver');
+      const msgKontrol = generatePersonalizedMessage(tmplKontrol, patient, 'caregiver', {
+        customJadwal: {
+          tanggal: jadwal.tanggal,
+          jam: jadwal.jam || patient.jadwalKontrol?.jam || '09:00',
+          dokter: jadwal.dokter || patient.jadwalKontrol?.dokter || patient.dokterDPJP,
+          poli: jadwal.poli || patient.jadwalKontrol?.poli || patient.poliklinik,
+        },
+      });
       if (!msgKontrol.recipientPhone) return;
 
       const labelPrefix = jadwal.label || `Kontrol ${idx + 1}`;
+      const dokterInfo = jadwal.dokter ? ` (${jadwal.dokter})` : '';
       items.push({
         id: `send-${todayStr}-${patient.id}-kontrol-${idx}-${diff}`,
         date: todayStr,
@@ -171,7 +179,7 @@ function buildDailyQueue(
         recipientPhone: msgKontrol.recipientPhone,
         recipientType: 'Caregiver',
         category: 'kontrol_dokter',
-        sessionLabel: `${labelPrefix}: ${tag}`,
+        sessionLabel: `${labelPrefix}${dokterInfo}: ${tag}`,
         messageBody: msgKontrol.body,
         status: 'pending',
         jadwalRef: jadwal.tanggal,
@@ -207,7 +215,16 @@ function buildDailyQueue(
         else if (diff === 0) tag = 'Hari H (Hari Ini!)';
         else return;
 
-        const msgIter = generatePersonalizedMessage(tmplIter, patient, 'caregiver');
+        const msgIter = generatePersonalizedMessage(tmplIter, patient, 'caregiver', {
+          customJadwal: {
+            tanggal: iter.tanggal,
+            jam: iter.jam || '08:30',
+            nomorResep: iter.nomorResep || patient.jadwalIter?.nomorResep,
+            iterKe: iter.nomorIter,
+            totalIterasi: iterList.length,
+            sisaIterasi: iterList.filter((it) => it.statusPengambilan !== 'sudah_diambil').length,
+          },
+        });
         if (!msgIter.recipientPhone) return;
 
         const isIter3 = iter.nomorIter >= 3;
@@ -595,7 +612,7 @@ export const KirimPesan = ({ patients, templates, onMarkSent }: KirimPesanProps)
                                 hour: '2-digit',
                                 minute: '2-digit',
                               })}{' '}
-                              WIB
+                              WITA
                             </div>
                           )}
                         </td>
