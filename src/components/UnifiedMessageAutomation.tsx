@@ -180,21 +180,6 @@ export const UnifiedMessageAutomation = ({
             Atur jam kirim otomatis harian, template pesan pengingat, dan integrasi WhatsApp Gateway.
           </p>
         </div>
-
-        {/* Master Toggle Button */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleToggleActive}
-            className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer shrink-0 ${
-              currentSettings.isActive
-                ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-amber-500/20'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
-            }`}
-          >
-            <Power className="w-4 h-4" />
-            {currentSettings.isActive ? 'Hentikan Otomasi Sementara' : 'Aktifkan Pengiriman Otomatis'}
-          </button>
-        </div>
       </div>
 
       {/* Saved Alert Toast */}
