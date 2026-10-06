@@ -756,7 +756,7 @@ export const KirimPesan = ({ patients, templates, onMarkSent }: KirimPesanProps)
         </div>
         <div className="bg-white p-4 rounded-2xl border border-teal-100 space-y-1.5">
           <div className="flex items-center gap-2 text-teal-700 font-bold text-xs">
-            <RefreshCw className="w-3.5 h-3.5" /> Iter Resep Farmasi
+            <RefreshCw className="w-3.5 h-3.5" /> Jadwal Iter
           </div>
           <p className="text-[11px] text-slate-600 leading-relaxed">
             Notifikasi pada <strong>H-3</strong>, <strong>H-1</strong>, dan <strong>Hari H</strong>{' '}

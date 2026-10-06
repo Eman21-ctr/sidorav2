@@ -983,7 +983,7 @@ export const PatientManagement = ({
                 <div className="flex items-center justify-between pb-1 border-b border-slate-100">
                   <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-bold">4</span>
-                    Jadwal Kontrol Dokter &amp; Jadwal Iterasi Resep
+                    Jadwal Kontrol dan Jadwal Iter
                   </h4>
                   <span className="text-[11px] text-slate-500 font-normal">
                     Atur jadwal kontrol (hingga 3x) &amp; iterasi farmasi
@@ -1115,7 +1115,7 @@ export const PatientManagement = ({
                   <div className="flex items-center justify-between">
                     <h5 className="font-bold text-teal-900 text-xs flex items-center gap-1.5">
                       <RefreshCw className="w-4 h-4 text-teal-600" />
-                      Jadwal Iterasi Resep Farmasi (Maks. 3 Iterasi)
+                      Jadwal Iter
                     </h5>
                     <label className="flex items-center gap-1.5 text-xs text-teal-900 font-semibold cursor-pointer select-none">
                       <input
@@ -1384,7 +1384,7 @@ export const PatientManagement = ({
                   className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5"
                 >
                   <Save className="w-4 h-4" />
-                  Simpan Data Pasien
+                  Simpan
                 </button>
               </div>
             </form>

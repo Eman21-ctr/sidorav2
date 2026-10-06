@@ -735,7 +735,7 @@ export const UnifiedMessageAutomation = ({
               className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors flex items-center gap-2"
             >
               <Save className="w-4 h-4 text-emerald-400" />
-              Simpan Jadwal Otomasi
+              Simpan
             </button>
           </div>
 
@@ -884,7 +884,7 @@ export const UnifiedMessageAutomation = ({
                       className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
                     >
                       <Save className="w-4 h-4" />
-                      Simpan Template {obatSubSesi === 'pagi' ? 'Pagi' : obatSubSesi === 'siang' ? 'Siang' : 'Malam'}
+                      Simpan
                     </button>
                   </div>
                 </div>
@@ -949,7 +949,7 @@ export const UnifiedMessageAutomation = ({
                       className="px-5 py-2.5 bg-teal-700 hover:bg-teal-600 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
                     >
                       <Save className="w-4 h-4" />
-                      Simpan Template Kontrol
+                      Simpan
                     </button>
                   </div>
                 </div>
@@ -1021,7 +1021,7 @@ export const UnifiedMessageAutomation = ({
                       className="px-5 py-2.5 bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
                     >
                       <Save className="w-4 h-4" />
-                      Simpan Template Jadwal Iter
+                      Simpan
                     </button>
                   </div>
                 </div>

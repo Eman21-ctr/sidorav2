@@ -847,7 +847,7 @@ export const ManualDashboard = () => {
                 <div className="p-3 rounded-xl border border-slate-200 bg-slate-50/60">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-teal-700 mb-1">
                     <RefreshCw className="w-3.5 h-3.5" />
-                    Iterasi Resep
+                    Kontrol Iter
                   </div>
                   <input
                     type="number"
@@ -924,7 +924,7 @@ export const ManualDashboard = () => {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-xs transition-all disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
-                {isSaving ? 'Menyimpan ke Cloud Supabase...' : `Simpan Data Tanggal ${formatIndoDate(formDate)}`}
+                {isSaving ? 'Menyimpan...' : 'Simpan'}
               </button>
             </div>
           </form>
