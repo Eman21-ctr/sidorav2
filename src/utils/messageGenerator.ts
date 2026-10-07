@@ -62,8 +62,8 @@ export function generatePersonalizedMessage(
   const time = options?.timeOfDay || inferredTime;
   const medsForTime = patient.obatRutin.filter(m => m.waktuMinum.includes(time));
   const medsListStr = medsForTime.length > 0 
-    ? medsForTime.map(m => `${m.namaObat} ${m.dosis} (${m.aturanPakai})`).join(', ')
-    : patient.obatRutin.map(m => `${m.namaObat} ${m.dosis}`).join(', ');
+    ? medsForTime.map(m => `${m.namaObat}${m.dosis ? ' ' + m.dosis : ''}`).join(', ')
+    : patient.obatRutin.map(m => `${m.namaObat}${m.dosis ? ' ' + m.dosis : ''}`).join(', ');
 
   const jamMinum = patient.jamMinumObat[time] || (time === 'pagi' ? '06:00' : time === 'siang' ? '12:00' : '18:00');
 
@@ -91,17 +91,17 @@ export function generatePersonalizedMessage(
     '{daftar_obat_pagi}': (() => {
       const meds = patient.obatRutin.filter(m => m.waktuMinum.includes('pagi'));
       if (meds.length === 0) return 'Tidak ada obat pagi (sesuai petunjuk dokter)';
-      return meds.map(m => `• ${m.namaObat} ${m.dosis} – ${m.aturanPakai}`).join('\n');
+      return meds.map(m => `• ${m.namaObat}${m.dosis ? ' ' + m.dosis : ''}`).join('\n');
     })(),
     '{daftar_obat_siang}': (() => {
       const meds = patient.obatRutin.filter(m => m.waktuMinum.includes('siang'));
       if (meds.length === 0) return 'Tidak ada obat siang (sesuai petunjuk dokter)';
-      return meds.map(m => `• ${m.namaObat} ${m.dosis} – ${m.aturanPakai}`).join('\n');
+      return meds.map(m => `• ${m.namaObat}${m.dosis ? ' ' + m.dosis : ''}`).join('\n');
     })(),
     '{daftar_obat_malam}': (() => {
       const meds = patient.obatRutin.filter(m => m.waktuMinum.includes('malam'));
       if (meds.length === 0) return 'Tidak ada obat malam (sesuai petunjuk dokter)';
-      return meds.map(m => `• ${m.namaObat} ${m.dosis} – ${m.aturanPakai}`).join('\n');
+      return meds.map(m => `• ${m.namaObat}${m.dosis ? ' ' + m.dosis : ''}`).join('\n');
     })(),
     '{jam_minum}': `${jamMinum} WITA`,
     '{tanggal_kontrol}': formatIndonesianDate(targetTglKontrol),
