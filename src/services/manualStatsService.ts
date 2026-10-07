@@ -47,8 +47,8 @@ export async function fetchManualDailyRecords(): Promise<ManualDailyRecord[]> {
     }
 
     const records: ManualDailyRecord[] = data.map(row => ({
-      date: row.date,
       ...(row.data as ManualDailyRecord),
+      date: row.date,
     }));
 
     saveLocalRecords(records);

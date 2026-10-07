@@ -25,6 +25,12 @@ import {
 import { Patient, RiskLevel, MedicationItem, SupervisionStatus } from '../types';
 import * as XLSX from 'xlsx';
 
+export const DOKTER_DPJP_OPTIONS = [
+  'dr. Qurrota Aini, Sp.KJ',
+  'dr. Raymond J.M Natanael, Sp.KJ',
+  'dr. Dennis, Sp.KJ',
+] as const;
+
 interface PatientManagementProps {
   patients: Patient[];
   onSavePatient: (patient: Patient) => void;
@@ -60,7 +66,7 @@ export const PatientManagement = ({
       p.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.noRM.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.diagnosaMedis.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.caregiver.nama.toLowerCase().includes(searchQuery.toLowerCase());
+      (p.caregiver?.nama ? p.caregiver.nama.toLowerCase().includes(searchQuery.toLowerCase()) : false);
     
     const matchRisk = filterRisk === 'all' || p.riskLevel === filterRisk;
 
@@ -85,14 +91,14 @@ export const PatientManagement = ({
       jenisKelamin: 'L',
       alamat: '',
       diagnosaMedis: 'F20.0 Skizofrenia Paranoid',
-      dokterDPJP: 'dr. Hendra Wicaksono, Sp.KJ',
-      poliklinik: 'Poli Jiwa Dewasa Subspesialis',
+      dokterDPJP: DOKTER_DPJP_OPTIONS[0],
+      poliklinik: 'Poli Jiwa',
       riskLevel: 'stabil',
       caregiver: {
         nama: '',
-        hubungan: 'Ibu Kandung',
+        hubungan: 'Keluarga',
         noTelepon: '',
-        targetPenerima: 'keduanya',
+        targetPenerima: 'pasien',
       },
       obatRutin: [
         {
@@ -110,43 +116,24 @@ export const PatientManagement = ({
       },
       kepatuhanMinumObatPersen: 0,
       jadwalKontrol: {
-        tanggal: '2026-10-15',
+        tanggal: '',
         jam: '09:00',
-        dokter: 'dr. Hendra Wicaksono, Sp.KJ',
-        poli: 'Poli Jiwa Dewasa',
+        dokter: DOKTER_DPJP_OPTIONS[0],
+        poli: 'Poli Jiwa',
         statusReminder: { h3Sent: false, h1Sent: false, h0Sent: false },
         konfirmasiKehadiran: 'belum_konfirmasi',
       },
-      jadwalKontrolList: [
-        {
-          id: `ktrl-${Date.now()}-1`,
-          tanggal: '2026-10-15',
-          jam: '09:00',
-          dokter: 'dr. Hendra Wicaksono, Sp.KJ',
-          poli: 'Poli Jiwa Dewasa',
-          label: 'Kontrol 1',
-        },
-      ],
+      jadwalKontrolList: [],
       jadwalIter: {
-        adaIter: true,
-        nomorResep: `RSP-X-${Math.floor(Math.random() * 8999 + 1000)}`,
-        tanggalIter: '2026-10-01',
-        totalIterasi: 2,
-        sisaIterasi: 2,
+        adaIter: false,
+        nomorResep: '-',
+        tanggalIter: '-',
+        totalIterasi: 0,
+        sisaIterasi: 0,
         statusReminder: { h2Sent: false, h0Sent: false },
         statusPengambilan: 'belum_diambil',
       },
-      jadwalIterList: [
-        {
-          id: 'iter-1',
-          nomorIter: 1,
-          tanggal: '2026-10-01',
-          jam: '08:30',
-          nomorResep: `RSP-X-${Math.floor(Math.random() * 8999 + 1000)}`,
-          statusPengambilan: 'belum_diambil',
-          label: 'Iter 1',
-        },
-      ],
+      jadwalIterList: [],
       catatanKhusus: '',
       statusPengawasan: 'dalam_pengawasan',
       notifikasiOtomatisAktif: true,
@@ -161,20 +148,22 @@ export const PatientManagement = ({
     const kList = (patient.jadwalKontrolList && patient.jadwalKontrolList.length > 0)
       ? patient.jadwalKontrolList.map((k, i) => ({
           ...k,
-          dokter: k.dokter || patient.jadwalKontrol?.dokter || patient.dokterDPJP || 'dr. Hendra Wicaksono, Sp.KJ',
-          poli: k.poli || patient.jadwalKontrol?.poli || patient.poliklinik || 'Poli Jiwa Dewasa',
+          dokter: k.dokter || patient.jadwalKontrol?.dokter || patient.dokterDPJP || DOKTER_DPJP_OPTIONS[0],
+          poli: k.poli || patient.jadwalKontrol?.poli || patient.poliklinik || 'Poli Jiwa',
           label: k.label || `Kontrol ${i + 1}`,
         }))
-      : [
+      : (patient.jadwalKontrol?.tanggal && patient.jadwalKontrol.tanggal !== '-')
+      ? [
           {
             id: 'ktrl-1',
-            tanggal: patient.jadwalKontrol?.tanggal || '',
-            jam: patient.jadwalKontrol?.jam || '09:00',
-            dokter: patient.jadwalKontrol?.dokter || patient.dokterDPJP || 'dr. Hendra Wicaksono, Sp.KJ',
-            poli: patient.jadwalKontrol?.poli || patient.poliklinik || 'Poli Jiwa Dewasa',
+            tanggal: patient.jadwalKontrol.tanggal,
+            jam: patient.jadwalKontrol.jam || '09:00',
+            dokter: patient.jadwalKontrol.dokter || patient.dokterDPJP || DOKTER_DPJP_OPTIONS[0],
+            poli: patient.jadwalKontrol.poli || patient.poliklinik || 'Poli Jiwa',
             label: 'Kontrol 1',
           },
-        ];
+        ]
+      : [];
 
     const iList = (patient.jadwalIterList && patient.jadwalIterList.length > 0)
       ? patient.jadwalIterList.map((it, i) => ({
@@ -183,23 +172,43 @@ export const PatientManagement = ({
           label: it.label || `Iter ${it.nomorIter || i + 1}`,
           nomorResep: it.nomorResep || patient.jadwalIter?.nomorResep || '',
         }))
-      : patient.jadwalIter?.adaIter
+      : (patient.jadwalIter?.adaIter && patient.jadwalIter?.tanggalIter && patient.jadwalIter.tanggalIter !== '-')
       ? [
           {
             id: 'iter-1',
             nomorIter: 1,
-            tanggal: patient.jadwalIter?.tanggalIter || '',
+            tanggal: patient.jadwalIter.tanggalIter,
             jam: '08:30',
-            nomorResep: patient.jadwalIter?.nomorResep || '',
-            statusPengambilan: patient.jadwalIter?.statusPengambilan || 'belum_diambil',
+            nomorResep: patient.jadwalIter.nomorResep || '',
+            statusPengambilan: patient.jadwalIter.statusPengambilan || 'belum_diambil',
             label: 'Iter 1',
           },
         ]
       : [];
 
+    const adaIterActive = !!patient.jadwalIter?.adaIter && (iList.length > 0 || (!!patient.jadwalIter.tanggalIter && patient.jadwalIter.tanggalIter !== '-'));
+
     setFormData({
       ...JSON.parse(JSON.stringify(patient)),
+      dokterDPJP: patient.dokterDPJP || DOKTER_DPJP_OPTIONS[0],
+      caregiver: {
+        nama: patient.caregiver?.nama || '',
+        hubungan: patient.caregiver?.hubungan || 'Keluarga',
+        noTelepon: patient.caregiver?.noTelepon || '',
+        targetPenerima: patient.caregiver?.targetPenerima || 'pasien',
+      },
       jadwalKontrolList: kList,
+      jadwalIter: {
+        ...(patient.jadwalIter || {
+          nomorResep: '-',
+          tanggalIter: '-',
+          totalIterasi: 0,
+          sisaIterasi: 0,
+          statusReminder: { h2Sent: false, h0Sent: false },
+          statusPengambilan: 'belum_diambil',
+        }),
+        adaIter: adaIterActive,
+      },
       jadwalIterList: iList,
       statusPengawasan: patient.statusPengawasan || 'dalam_pengawasan',
       notifikasiOtomatisAktif: patient.notifikasiOtomatisAktif !== false,
@@ -213,36 +222,48 @@ export const PatientManagement = ({
     if (!formData.nama || !formData.noRM) return;
 
     const isSupervised = formData.statusPengawasan === 'dalam_pengawasan';
-    const firstKontrol = formData.jadwalKontrolList?.[0];
-    const firstIter = formData.jadwalIterList?.[0];
-    const adaIter = !!formData.jadwalIter?.adaIter;
+    
+    // Filter hanya jadwal yang tanggalnya diisi
+    const validKontrolList = (formData.jadwalKontrolList || []).filter(k => k.tanggal && k.tanggal.trim() !== '');
+    const firstKontrol = validKontrolList[0];
+
+    const validIterList = (formData.jadwalIterList || []).filter(it => it.tanggal && it.tanggal.trim() !== '');
+    const adaIter = !!formData.jadwalIter?.adaIter && validIterList.length > 0;
+    const firstIter = validIterList[0];
 
     const finalPatientData: Patient = {
       ...(formData as Patient),
-      jadwalKontrolList: formData.jadwalKontrolList || [],
-      jadwalIterList: adaIter ? (formData.jadwalIterList || []) : [],
+      dokterDPJP: formData.dokterDPJP || DOKTER_DPJP_OPTIONS[0],
+      caregiver: {
+        nama: formData.caregiver?.nama || '',
+        hubungan: formData.caregiver?.hubungan || 'Keluarga',
+        noTelepon: formData.caregiver?.noTelepon || '',
+        targetPenerima: formData.caregiver?.targetPenerima || 'pasien',
+      },
+      jadwalKontrolList: validKontrolList,
       jadwalKontrol: {
         ...(formData.jadwalKontrol || {
           statusReminder: { h3Sent: false, h1Sent: false, h0Sent: false },
           konfirmasiKehadiran: 'belum_konfirmasi',
         }),
-        tanggal: firstKontrol?.tanggal || formData.jadwalKontrol?.tanggal || '',
-        jam: firstKontrol?.jam || formData.jadwalKontrol?.jam || '09:00',
-        dokter: firstKontrol?.dokter || formData.jadwalKontrol?.dokter || formData.dokterDPJP || '',
-        poli: firstKontrol?.poli || formData.jadwalKontrol?.poli || 'Poli Jiwa Dewasa',
+        tanggal: firstKontrol?.tanggal || '',
+        jam: firstKontrol?.jam || '09:00',
+        dokter: firstKontrol?.dokter || formData.dokterDPJP || DOKTER_DPJP_OPTIONS[0],
+        poli: firstKontrol?.poli || formData.poliklinik || 'Poli Jiwa',
       },
+      jadwalIterList: adaIter ? validIterList : [],
       jadwalIter: {
         ...(formData.jadwalIter || {
           statusReminder: { h2Sent: false, h0Sent: false },
         }),
         adaIter,
-        nomorResep: formData.jadwalIter?.nomorResep || firstIter?.nomorResep || '',
-        tanggalIter: firstIter?.tanggal || formData.jadwalIter?.tanggalIter || '',
-        totalIterasi: formData.jadwalIterList?.length || formData.jadwalIter?.totalIterasi || 1,
-        sisaIterasi: formData.jadwalIterList
-          ? formData.jadwalIterList.filter(it => it.statusPengambilan !== 'sudah_diambil').length
-          : formData.jadwalIter?.sisaIterasi || 1,
-        statusPengambilan: firstIter?.statusPengambilan || 'belum_diambil',
+        nomorResep: adaIter ? (firstIter?.nomorResep || formData.jadwalIter?.nomorResep || '-') : '-',
+        tanggalIter: adaIter ? (firstIter?.tanggal || '-') : '-',
+        totalIterasi: adaIter ? validIterList.length : 0,
+        sisaIterasi: adaIter
+          ? validIterList.filter(it => it.statusPengambilan !== 'sudah_diambil').length
+          : 0,
+        statusPengambilan: adaIter ? (firstIter?.statusPengambilan || 'belum_diambil') : 'belum_diambil',
       },
       statusPengawasan: formData.statusPengawasan || 'dalam_pengawasan',
       notifikasiOtomatisAktif: isSupervised,
@@ -505,11 +526,15 @@ export const PatientManagement = ({
                 <div className="text-xs space-y-1 text-slate-600">
                   <div className="flex items-center gap-1.5 font-medium text-slate-800">
                     <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    Caregiver: {patient.caregiver.nama} ({patient.caregiver.hubungan})
+                    {patient.caregiver?.nama ? (
+                      <span>Caregiver: {patient.caregiver.nama} ({patient.caregiver.hubungan || 'Keluarga'})</span>
+                    ) : (
+                      <span className="text-slate-400 italic">Caregiver: Belum didaftarkan (Opsional)</span>
+                    )}
                   </div>
                   <div className="flex items-center gap-1.5 text-slate-500 pl-5">
                     <Phone className="w-3 h-3" />
-                    WA: {patient.caregiver.noTelepon || '-'} (Kirim ke: {patient.caregiver.targetPenerima})
+                    WA: {patient.caregiver?.noTelepon || '-'} (Kirim ke: {patient.caregiver?.targetPenerima || 'pasien'})
                   </div>
                 </div>
 
@@ -535,7 +560,9 @@ export const PatientManagement = ({
                     <span className="font-medium text-purple-800">
                       {patient.jadwalKontrolList && patient.jadwalKontrolList.length > 1
                         ? `${patient.jadwalKontrolList.length} Jadwal (${patient.jadwalKontrolList[0].tanggal || '-'})`
-                        : (patient.jadwalKontrol?.tanggal || '-')}
+                        : (patient.jadwalKontrol?.tanggal && patient.jadwalKontrol.tanggal !== '-'
+                            ? patient.jadwalKontrol.tanggal
+                            : 'Tidak ada kontrol')}
                     </span>
                   </div>
 
@@ -785,13 +812,18 @@ export const PatientManagement = ({
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Dokter DPJP (Sp.KJ)</label>
-                    <input
-                      type="text"
-                      value={formData.dokterDPJP || ''}
+                    <select
+                      value={formData.dokterDPJP || DOKTER_DPJP_OPTIONS[0]}
                       onChange={(e) => setFormData({ ...formData, dokterDPJP: e.target.value })}
-                      placeholder="dr. Hendra Wicaksono, Sp.KJ"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
-                    />
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    >
+                      {DOKTER_DPJP_OPTIONS.map((doc) => (
+                        <option key={doc} value={doc}>{doc}</option>
+                      ))}
+                      {formData.dokterDPJP && !DOKTER_DPJP_OPTIONS.includes(formData.dokterDPJP as any) && (
+                        <option value={formData.dokterDPJP}>{formData.dokterDPJP}</option>
+                      )}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -801,13 +833,13 @@ export const PatientManagement = ({
                 <h4 className="font-bold text-slate-900 text-sm mb-3 pb-1 border-b border-slate-100 flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-bold">2</span>
                   Data Caregiver / Penanggung Jawab Pasien
+                  <span className="text-[10px] text-slate-400 font-normal ml-auto">(Tidak wajib / opsional)</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Caregiver *</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Caregiver (Opsional)</label>
                     <input
                       type="text"
-                      required
                       value={formData.caregiver?.nama || ''}
                       onChange={(e) => setFormData({
                         ...formData,
@@ -831,10 +863,9 @@ export const PatientManagement = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">No. WA Caregiver *</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">No. WA Caregiver (Opsional)</label>
                     <input
                       type="text"
-                      required
                       value={formData.caregiver?.noTelepon || ''}
                       onChange={(e) => setFormData({
                         ...formData,
@@ -992,9 +1023,9 @@ export const PatientManagement = ({
 
                 {/* Datalist rekomendasi dokter psikiater */}
                 <datalist id="dokter-options">
-                  <option value="dr. Hendra Wicaksono, Sp.KJ" />
-                  <option value="dr. Ratna Anindita, Sp.KJ, M.Kes" />
-                  <option value="dr. Farida Kusuma, Sp.KJ" />
+                  {DOKTER_DPJP_OPTIONS.map((doc) => (
+                    <option key={doc} value={doc} />
+                  ))}
                 </datalist>
 
                 {/* ─── A. Jadwal Kontrol Dokter ─── */}
@@ -1002,7 +1033,7 @@ export const PatientManagement = ({
                   <div className="flex items-center justify-between">
                     <h5 className="font-bold text-purple-900 text-xs flex items-center gap-1.5">
                       <Calendar className="w-4 h-4 text-purple-600" />
-                      Jadwal Kontrol Dokter Spesialis Jiwa (Maks. 3 Jadwal)
+                      Jadwal Kontrol Dokter Spesialis Jiwa (Opsional, Maks. 3)
                     </h5>
                     <button
                       type="button"
@@ -1018,8 +1049,8 @@ export const PatientManagement = ({
                               id: `ktrl-${Date.now()}-${nextIdx}`,
                               tanggal: '',
                               jam: '09:00',
-                              dokter: formData.dokterDPJP || 'dr. Hendra Wicaksono, Sp.KJ',
-                              poli: formData.poliklinik || 'Poli Jiwa Dewasa',
+                              dokter: formData.dokterDPJP || DOKTER_DPJP_OPTIONS[0],
+                              poli: formData.poliklinik || 'Poli Jiwa',
                               label: `Kontrol ${nextIdx}`,
                             },
                           ],
@@ -1032,19 +1063,23 @@ export const PatientManagement = ({
                     </button>
                   </div>
 
-                  <div className="space-y-2">
-                    {(formData.jadwalKontrolList || []).map((jadwal, idx) => (
-                      <div key={jadwal.id || `ktrl-${idx}`} className="bg-white p-3 rounded-lg border border-purple-200 space-y-2 shadow-xs">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-800 text-xs font-bold flex items-center justify-center shrink-0">
-                              {idx + 1}
-                            </span>
-                            <span className="font-semibold text-xs text-purple-900">
-                              {jadwal.label || `Kontrol ${idx + 1}`}
-                            </span>
-                          </div>
-                          {(formData.jadwalKontrolList || []).length > 1 && (
+                  {(formData.jadwalKontrolList || []).length === 0 ? (
+                    <div className="p-3 text-center rounded-lg border border-dashed border-purple-200 text-xs text-purple-700 bg-white/70">
+                      Pasien ini belum memiliki jadwal kontrol dokter. Klik <strong>+ Tambah Jadwal Kontrol</strong> di atas jika ingin menambahkan.
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {(formData.jadwalKontrolList || []).map((jadwal, idx) => (
+                        <div key={jadwal.id || `ktrl-${idx}`} className="bg-white p-3 rounded-lg border border-purple-200 space-y-2 shadow-xs">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-800 text-xs font-bold flex items-center justify-center shrink-0">
+                                {idx + 1}
+                              </span>
+                              <span className="font-semibold text-xs text-purple-900">
+                                {jadwal.label || `Kontrol ${idx + 1}`}
+                              </span>
+                            </div>
                             <button
                               type="button"
                               onClick={() => {
@@ -1057,57 +1092,56 @@ export const PatientManagement = ({
                               <Trash2 className="w-3.5 h-3.5" />
                               <span className="text-[10px]">Hapus</span>
                             </button>
-                          )}
-                        </div>
+                          </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                          <div>
-                            <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Tanggal Kontrol *</label>
-                            <input
-                              type="date"
-                              value={jadwal.tanggal}
-                              onChange={(e) => {
-                                const updated = [...(formData.jadwalKontrolList || [])];
-                                updated[idx] = { ...updated[idx], tanggal: e.target.value };
-                                setFormData({ ...formData, jadwalKontrolList: updated });
-                              }}
-                              className="w-full px-2.5 py-1.5 rounded-lg border border-purple-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400"
-                              required={idx === 0}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Jam Praktek</label>
-                            <input
-                              type="text"
-                              placeholder="09:00"
-                              value={jadwal.jam || '09:00'}
-                              onChange={(e) => {
-                                const updated = [...(formData.jadwalKontrolList || [])];
-                                updated[idx] = { ...updated[idx], jam: e.target.value };
-                                setFormData({ ...formData, jadwalKontrolList: updated });
-                              }}
-                              className="w-full px-2.5 py-1.5 rounded-lg border border-purple-200 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Dokter Bertugas / DPJP</label>
-                            <input
-                              type="text"
-                              list="dokter-options"
-                              placeholder="dr. Hendra Wicaksono, Sp.KJ"
-                              value={jadwal.dokter || ''}
-                              onChange={(e) => {
-                                const updated = [...(formData.jadwalKontrolList || [])];
-                                updated[idx] = { ...updated[idx], dokter: e.target.value };
-                                setFormData({ ...formData, jadwalKontrolList: updated });
-                              }}
-                              className="w-full px-2.5 py-1.5 rounded-lg border border-purple-200 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
-                            />
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div>
+                              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Tanggal Kontrol (Opsional)</label>
+                              <input
+                                type="date"
+                                value={jadwal.tanggal}
+                                onChange={(e) => {
+                                  const updated = [...(formData.jadwalKontrolList || [])];
+                                  updated[idx] = { ...updated[idx], tanggal: e.target.value };
+                                  setFormData({ ...formData, jadwalKontrolList: updated });
+                                }}
+                                className="w-full px-2.5 py-1.5 rounded-lg border border-purple-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Jam Praktek</label>
+                              <input
+                                type="text"
+                                placeholder="09:00"
+                                value={jadwal.jam || '09:00'}
+                                onChange={(e) => {
+                                  const updated = [...(formData.jadwalKontrolList || [])];
+                                  updated[idx] = { ...updated[idx], jam: e.target.value };
+                                  setFormData({ ...formData, jadwalKontrolList: updated });
+                                }}
+                                className="w-full px-2.5 py-1.5 rounded-lg border border-purple-200 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Dokter Bertugas / DPJP</label>
+                              <input
+                                type="text"
+                                list="dokter-options"
+                                placeholder={DOKTER_DPJP_OPTIONS[0]}
+                                value={jadwal.dokter || ''}
+                                onChange={(e) => {
+                                  const updated = [...(formData.jadwalKontrolList || [])];
+                                  updated[idx] = { ...updated[idx], dokter: e.target.value };
+                                  setFormData({ ...formData, jadwalKontrolList: updated });
+                                }}
+                                className="w-full px-2.5 py-1.5 rounded-lg border border-purple-200 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* ─── B. Jadwal Iterasi Resep ─── */}
@@ -1115,7 +1149,7 @@ export const PatientManagement = ({
                   <div className="flex items-center justify-between">
                     <h5 className="font-bold text-teal-900 text-xs flex items-center gap-1.5">
                       <RefreshCw className="w-4 h-4 text-teal-600" />
-                      Jadwal Iter
+                      Jadwal Iter (Farmasi)
                     </h5>
                     <label className="flex items-center gap-1.5 text-xs text-teal-900 font-semibold cursor-pointer select-none">
                       <input
@@ -1129,9 +1163,9 @@ export const PatientManagement = ({
                               {
                                 id: 'iter-1',
                                 nomorIter: 1,
-                                tanggal: formData.jadwalIter?.tanggalIter || '',
+                                tanggal: formData.jadwalIter?.tanggalIter && formData.jadwalIter.tanggalIter !== '-' ? formData.jadwalIter.tanggalIter : '',
                                 jam: '08:30',
-                                nomorResep: formData.jadwalIter?.nomorResep || '',
+                                nomorResep: formData.jadwalIter?.nomorResep && formData.jadwalIter.nomorResep !== '-' ? formData.jadwalIter.nomorResep : '',
                                 statusPengambilan: 'belum_diambil',
                                 label: 'Iter 1',
                               },
@@ -1153,7 +1187,7 @@ export const PatientManagement = ({
                     <div className="space-y-3">
                       <div>
                         <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                          No. Salinan Resep Farmasi
+                          No. Salinan Resep Farmasi (Opsional)
                         </label>
                         <input
                           type="text"
@@ -1208,23 +1242,27 @@ export const PatientManagement = ({
                         </button>
                       </div>
 
-                      <div className="space-y-2">
-                        {(formData.jadwalIterList || []).map((iter, idx) => {
-                          return (
-                            <div
-                              key={iter.id || `iter-${idx}`}
-                              className="bg-white p-3 rounded-lg border border-teal-200 space-y-2 shadow-xs"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-800 text-xs font-bold flex items-center justify-center shrink-0">
-                                    {iter.nomorIter || idx + 1}
-                                  </span>
-                                  <span className="font-semibold text-xs text-teal-900">
-                                    {iter.label || `Iter ${iter.nomorIter || idx + 1}`}
-                                  </span>
-                                </div>
-                                {(formData.jadwalIterList || []).length > 1 && (
+                      {(formData.jadwalIterList || []).length === 0 ? (
+                        <div className="p-3 text-center rounded-lg border border-dashed border-teal-200 text-xs text-teal-700 bg-white/70">
+                          Belum ada tanggal iterasi. Klik <strong>+ Tambah Jadwal Iter</strong> di atas.
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {(formData.jadwalIterList || []).map((iter, idx) => {
+                            return (
+                              <div
+                                key={iter.id || `iter-${idx}`}
+                                className="bg-white p-3 rounded-lg border border-teal-200 space-y-2 shadow-xs"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-800 text-xs font-bold flex items-center justify-center shrink-0">
+                                      {iter.nomorIter || idx + 1}
+                                    </span>
+                                    <span className="font-semibold text-xs text-teal-900">
+                                      {iter.label || `Iter ${iter.nomorIter || idx + 1}`}
+                                    </span>
+                                  </div>
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -1237,25 +1275,24 @@ export const PatientManagement = ({
                                     <Trash2 className="w-3.5 h-3.5" />
                                     <span className="text-[10px]">Hapus</span>
                                   </button>
-                                )}
-                              </div>
-
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                <div>
-                                  <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
-                                    Tanggal Pengambilan Obat *
-                                  </label>
-                                  <input
-                                    type="date"
-                                    value={iter.tanggal}
-                                    onChange={(e) => {
-                                      const updated = [...(formData.jadwalIterList || [])];
-                                      updated[idx] = { ...updated[idx], tanggal: e.target.value };
-                                      setFormData({ ...formData, jadwalIterList: updated });
-                                    }}
-                                    className="w-full px-2.5 py-1.5 rounded-lg border border-teal-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-400"
-                                  />
                                 </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                  <div>
+                                    <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
+                                      Tanggal Pengambilan Obat (Opsional)
+                                    </label>
+                                    <input
+                                      type="date"
+                                      value={iter.tanggal}
+                                      onChange={(e) => {
+                                        const updated = [...(formData.jadwalIterList || [])];
+                                        updated[idx] = { ...updated[idx], tanggal: e.target.value };
+                                        setFormData({ ...formData, jadwalIterList: updated });
+                                      }}
+                                      className="w-full px-2.5 py-1.5 rounded-lg border border-teal-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-400"
+                                    />
+                                  </div>
                                 <div>
                                   <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
                                     Jam / Sesi Pelayanan
@@ -1297,10 +1334,11 @@ export const PatientManagement = ({
                           );
                         })}
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
+            </div>
 
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm pb-1 border-b border-slate-200 flex items-center gap-2">

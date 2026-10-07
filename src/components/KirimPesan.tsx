@@ -218,7 +218,7 @@ function buildDailyQueue(
         const msgIter = generatePersonalizedMessage(tmplIter, patient, 'caregiver', {
           customJadwal: {
             tanggal: iter.tanggal,
-            jam: iter.jam || '08:30',
+            jam: ('jam' in iter && iter.jam) ? iter.jam : '08:30',
             nomorResep: iter.nomorResep || patient.jadwalIter?.nomorResep,
             iterKe: iter.nomorIter,
             totalIterasi: iterList.length,

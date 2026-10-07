@@ -58,7 +58,7 @@ export const NotificationTemplates = ({
     { tag: '{ketentuan_kehadiran_iter}', label: 'Keterangan Hadir Iter (Iter 3 Wajib)', example: 'Catatan iter ke-3 wajib bersama pasien' },
     { tag: '{sisa_iter}', label: 'Sisa Jatah Iterasi', example: '1x dari total 2x' },
     { tag: '{nomor_rm}', label: 'No. Rekam Medis (Opsional)', example: 'RM-2024-0102' },
-    { tag: '{dokter_dpjp}', label: 'Dokter DPJP (Opsional)', example: 'dr. Hendra Wicaksono, Sp.KJ' },
+    { tag: '{dokter_dpjp}', label: 'Dokter DPJP (Opsional)', example: 'dr. Qurrota Aini, Sp.KJ' },
     { tag: '{hotline_rsj}', label: 'Hotline WA RSJ', example: RSJ_INFO.hotlineWA },
     { tag: '{nama_rsj}', label: 'Nama RSJ', example: RSJ_INFO.nama },
   ];
