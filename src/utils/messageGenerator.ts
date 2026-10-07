@@ -112,6 +112,13 @@ export function generatePersonalizedMessage(
     '{tanggal_iter}': formatIndonesianDate(targetTglIter),
     '{sisa_iter}': `${sisaIter}x dari total ${totalIter}x pengulangan`,
     '{iter_ke}': `Iter ke-${iterKe}`,
+    '{iter_ke_teks}': (() => {
+      const ordinals = ['pertama', 'kedua', 'ketiga', 'keempat', 'kelima'];
+      return ordinals[iterKe - 1] || `ke-${iterKe}`;
+    })(),
+    '{ketentuan_iter3_tambahan}': isIter3OrMore
+      ? `\n\n*Catatan:* Karena ini iter ketiga, pengambilan obat *wajib bersama pasien langsung* ke rumah sakit. Jadwal iter harus tepat sesuai tanggal, tidak boleh terlambat atau lebih dahulu.`
+      : ``,
     '{ketentuan_kehadiran_iter}': (() => {
       if (isIter3OrMore) {
         return `⚠️ *Catatan:* Karena ini iter ke-${iterKe}, pengambilan obat *wajib datang bersama pasien langsung* ke rumah sakit.`;

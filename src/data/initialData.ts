@@ -9,13 +9,15 @@ export const INITIAL_TEMPLATES: MessageTemplate[] = [
     deskripsi: 'Pesan simpel pengingat minum obat pagi sesuai data pasien.',
     defaultTime: '06:00',
     active: true,
-    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
+    templateText: `Hallo, selamat pagi Bapak/Ibu {nama_pasien}.
 
-Mengingatkan jadwal minum obat pagi untuk *{nama_pasien}*:
+Perkenalkan saya Ners Nofy dari Poliklinik Rumah Sakit Jiwa Naimata.
+
+Ijin mengingatkan kepada Bapak/Ibu untuk minum obat.
+Ini jenis obat beserta dosisnya yang Bapak/Ibu minum pagi ini:
 {daftar_obat_pagi}
-⏰ Waktu minum: {jam_minum}
 
-Mohon pastikan obatnya diminum ya. Terima kasih dan salam sehat selalu. 🙏`,
+Tetap semangat yaaaa minum obatnya. Salam sehat selalu. Tuhan memberkati....`,
   },
   {
     id: 'tmpl-obat-siang',
@@ -25,13 +27,15 @@ Mohon pastikan obatnya diminum ya. Terima kasih dan salam sehat selalu. 🙏`,
     deskripsi: 'Pesan simpel pengingat minum obat siang sesuai data pasien.',
     defaultTime: '12:00',
     active: true,
-    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
+    templateText: `Hallo, selamat siang Bapak/Ibu {nama_pasien}.
 
-Mengingatkan jadwal minum obat siang untuk *{nama_pasien}*:
+Perkenalkan saya Ners Nofy dari Poliklinik Rumah Sakit Jiwa Naimata.
+
+Ijin mengingatkan kepada Bapak/Ibu untuk minum obat.
+Ini jenis obat beserta dosisnya yang Bapak/Ibu minum siang ini:
 {daftar_obat_siang}
-⏰ Waktu minum: {jam_minum}
 
-Mohon pastikan obatnya diminum ya. Terima kasih dan salam sehat selalu. 🙏`,
+Tetap semangat yaaaa minum obatnya. Salam sehat selalu. Tuhan memberkati....`,
   },
   {
     id: 'tmpl-obat-malam',
@@ -41,13 +45,15 @@ Mohon pastikan obatnya diminum ya. Terima kasih dan salam sehat selalu. 🙏`,
     deskripsi: 'Pesan simpel pengingat minum obat malam sesuai data pasien.',
     defaultTime: '18:00',
     active: true,
-    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
+    templateText: `Hallo, selamat malam Bapak/Ibu {nama_pasien}.
 
-Mengingatkan jadwal minum obat malam untuk *{nama_pasien}*:
+Perkenalkan saya Ners Nofy dari Poliklinik Rumah Sakit Jiwa Naimata.
+
+Ijin mengingatkan kepada Bapak/Ibu untuk minum obat.
+Ini jenis obat beserta dosisnya yang Bapak/Ibu minum malam ini:
 {daftar_obat_malam}
-⏰ Waktu minum: {jam_minum}
 
-Mohon pastikan obatnya diminum sebelum beristirahat ya. Terima kasih dan selamat beristirahat. 🙏`,
+Tetap semangat yaaaa minum obatnya. Salam sehat selalu. Tuhan memberkati....`,
   },
   {
     id: 'tmpl-kontrol-dokter',
@@ -57,13 +63,13 @@ Mohon pastikan obatnya diminum sebelum beristirahat ya. Terima kasih dan selamat
     deskripsi: 'Pesan simpel pengingat jadwal kontrol pasien.',
     defaultTime: '06:00',
     active: true,
-    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
+    templateText: `Hallo, selamat pagi Bapak/Ibu {nama_pasien}.
 
-Mengingatkan jadwal kontrol untuk *{nama_pasien}*:
-📅 Tanggal: {tanggal_kontrol}
-⏰ Jam: {jam_kontrol} WITA
+Perkenalkan saya Ners Nofy dari Poliklinik Rumah Sakit Jiwa Naimata.
 
-Mohon hadir tepat waktu ya. Terima kasih dan salam sehat selalu. 🙏`,
+Ijin mengingatkan kepada Bapak/Ibu untuk datang kontrol di Poliklinik Jiwa pada hari {tanggal_kontrol}.
+
+Mohon informasi baliknya ya jika pesan ini sudah Bapak/Ibu terima...`,
   },
   {
     id: 'tmpl-iter-resep',
@@ -73,14 +79,13 @@ Mohon hadir tepat waktu ya. Terima kasih dan salam sehat selalu. 🙏`,
     deskripsi: 'Pesan simpel pengingat jadwal iterasi pengambilan obat farmasi.',
     defaultTime: '06:00',
     active: true,
-    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
+    templateText: `Hallo, selamat pagi Bapak/Ibu {nama_pasien}.
 
-Mengingatkan jadwal pengambilan obat (*{iter_ke}*) untuk *{nama_pasien}*:
-📅 Tanggal: {tanggal_iter}
+Perkenalkan saya Ners Nofy dari Poliklinik Rumah Sakit Jiwa Naimata.
 
-{ketentuan_kehadiran_iter}
+Ijin mengingatkan kepada Bapak/Ibu untuk datang kontrol iter {iter_ke_teks} di Poliklinik Jiwa pada hari {tanggal_iter}.
 
-Mohon mengambil obat tepat pada tanggal yang ditentukan ya. Terima kasih dan salam sehat selalu. 🙏`,
+Mohon informasi baliknya ya jika pesan ini sudah Bapak/Ibu terima...{ketentuan_iter3_tambahan}`,
   },
   {
     id: 'tmpl-edukasi',
@@ -90,11 +95,13 @@ Mohon mengambil obat tepat pada tanggal yang ditentukan ya. Terima kasih dan sal
     deskripsi: 'Pesan singkat penyemangat dan apresiasi bagi keluarga/pendamping dari RSJ Naimata.',
     defaultTime: '06:00',
     active: true,
-    templateText: `Halo *{nama_panggilan}*, kami dari *{nama_rsj}*.
+    templateText: `Hallo, selamat pagi Bapak/Ibu {nama_pasien}.
 
-Terima kasih atas perhatian dan ketelatenan Anda dalam mendampingi pengobatan *{nama_pasien}*. Semangat dan kebersamaan keluarga adalah kunci utama proses pemulihan.
+Perkenalkan saya Ners Nofy dari Poliklinik Rumah Sakit Jiwa Naimata.
 
-Salam sehat selalu. 🙏`,
+Terima kasih atas perhatian dan ketelatenan dalam mendampingi pengobatan. Semangat dan kebersamaan keluarga adalah kunci utama proses pemulihan.
+
+Salam sehat selalu. Tuhan memberkati....`,
   },
 ];
 
