@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   Send,
   CheckCircle2,
@@ -19,12 +19,14 @@ import {
   Sparkles,
   CheckCheck,
 } from 'lucide-react';
-import { Patient, MessageTemplate, ManualSendItem, ReminderCategory } from '../types';
+import { Patient, MessageTemplate, ManualSendItem, ReminderCategory, WhatsAppMessage } from '../types';
 import { generatePersonalizedMessage } from '../utils/messageGenerator';
 
 interface KirimPesanProps {
   patients: Patient[];
   templates: MessageTemplate[];
+  messages?: WhatsAppMessage[]; // Pesan terkirim dari Supabase — untuk restore status saat reload
+  onSendMessage?: (msg: WhatsAppMessage) => void; // Persist ke Supabase
   onMarkSent?: (item: ManualSendItem) => void;
 }
 
@@ -298,15 +300,60 @@ const CategoryBadge = ({ category }: { category: ReminderCategory }) => {
 // ============================================================
 // Main Component
 // ============================================================
-export const KirimPesan = ({ patients, templates, onMarkSent }: KirimPesanProps) => {
+export const KirimPesan = ({ patients, templates, messages = [], onSendMessage, onMarkSent }: KirimPesanProps) => {
   const todayStr = getTodayStr();
 
-  const [sentStatuses, setSentStatuses] = useState<Record<string, ManualSendItem['status']>>({});
-  const [sentTimes, setSentTimes] = useState<Record<string, string>>({});
+  // Derive initial status dari messages Supabase agar persist setelah reload
+  const [sentStatuses, setSentStatuses] = useState<Record<string, ManualSendItem['status']>>(() => {
+    const initial: Record<string, ManualSendItem['status']> = {};
+    messages.forEach(m => {
+      if (m.manualSendItemId && m.status !== 'queued') {
+        initial[m.manualSendItemId] = 'sent';
+      }
+    });
+    return initial;
+  });
+  const [sentTimes, setSentTimes] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    messages.forEach(m => {
+      if (m.manualSendItemId && m.sentAt) {
+        initial[m.manualSendItemId] = m.sentAt;
+      }
+    });
+    return initial;
+  });
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<'all' | ReminderCategory>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'sent' | 'skipped'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Sync ulang sentStatuses dari messages Supabase saat data selesai dimuat
+  // (lazy initializer hanya berjalan sekali—sebelum Supabase data tiba)
+  useEffect(() => {
+    if (messages.length === 0) return;
+    setSentStatuses(prev => {
+      const updated = { ...prev };
+      let changed = false;
+      messages.forEach(m => {
+        if (m.manualSendItemId && m.status !== 'queued' && !updated[m.manualSendItemId]) {
+          updated[m.manualSendItemId] = 'sent';
+          changed = true;
+        }
+      });
+      return changed ? updated : prev;
+    });
+    setSentTimes(prev => {
+      const updated = { ...prev };
+      let changed = false;
+      messages.forEach(m => {
+        if (m.manualSendItemId && m.sentAt && !updated[m.manualSendItemId]) {
+          updated[m.manualSendItemId] = m.sentAt;
+          changed = true;
+        }
+      });
+      return changed ? updated : prev;
+    });
+  }, [messages]);
 
   const allItems = useMemo(
     () => buildDailyQueue(patients, templates, todayStr),
@@ -343,10 +390,30 @@ export const KirimPesan = ({ patients, templates, onMarkSent }: KirimPesanProps)
         const now = new Date().toISOString();
         setSentStatuses(prev => ({ ...prev, [item.id]: 'sent' }));
         setSentTimes(prev => ({ ...prev, [item.id]: now }));
+        // Buat WhatsAppMessage dan simpan ke Supabase
+        const waMsg: WhatsAppMessage = {
+          id: `manual-${item.id}`,
+          manualSendItemId: item.id,
+          patientId: item.patientId,
+          patientName: item.patientName,
+          noRM: item.noRM,
+          recipientName: item.recipientName,
+          recipientPhone: item.recipientPhone,
+          recipientType: item.recipientType,
+          category: item.category,
+          title: item.sessionLabel,
+          body: item.messageBody,
+          scheduledAt: `${item.date} ${item.sessionLabel}`,
+          sentAt: now,
+          deliveredAt: now,
+          status: 'delivered',
+          bspProvider: 'Manual (Buka WA)',
+        };
+        onSendMessage?.(waMsg);
         onMarkSent?.({ ...item, status: 'sent', sentAt: now });
       }, 1500);
     },
-    [onMarkSent]
+    [onSendMessage, onMarkSent]
   );
 
   const handleMarkSent = useCallback(
@@ -354,9 +421,29 @@ export const KirimPesan = ({ patients, templates, onMarkSent }: KirimPesanProps)
       const now = new Date().toISOString();
       setSentStatuses(prev => ({ ...prev, [item.id]: 'sent' }));
       setSentTimes(prev => ({ ...prev, [item.id]: now }));
+      // Buat WhatsAppMessage dan simpan ke Supabase
+      const waMsg: WhatsAppMessage = {
+        id: `manual-${item.id}`,
+        manualSendItemId: item.id,
+        patientId: item.patientId,
+        patientName: item.patientName,
+        noRM: item.noRM,
+        recipientName: item.recipientName,
+        recipientPhone: item.recipientPhone,
+        recipientType: item.recipientType,
+        category: item.category,
+        title: item.sessionLabel,
+        body: item.messageBody,
+        scheduledAt: `${item.date} ${item.sessionLabel}`,
+        sentAt: now,
+        deliveredAt: now,
+        status: 'delivered',
+        bspProvider: 'Manual (Tandai Terkirim)',
+      };
+      onSendMessage?.(waMsg);
       onMarkSent?.({ ...item, status: 'sent', sentAt: now });
     },
-    [onMarkSent]
+    [onSendMessage, onMarkSent]
   );
 
   const handleSkip = useCallback((item: ManualSendItem) => {

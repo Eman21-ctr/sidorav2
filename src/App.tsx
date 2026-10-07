@@ -808,6 +808,8 @@ export default function App() {
           <KirimPesan
             patients={patients}
             templates={templates}
+            messages={messages}
+            onSendMessage={handleSendMessage}
           />
         )}
 

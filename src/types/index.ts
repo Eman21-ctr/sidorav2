@@ -128,6 +128,7 @@ export interface WhatsAppMessage {
   replyText?: string;
   bspProvider: string;
   errorMessage?: string;
+  manualSendItemId?: string; // Referensi ke ManualSendItem.id (untuk tracking status kirim manual)
 }
 
 export interface MessageTemplate {
