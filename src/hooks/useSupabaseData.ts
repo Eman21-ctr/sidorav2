@@ -124,22 +124,22 @@ export function useSupabaseData(): SupabaseDataState {
       // Use data from Supabase
       setPatients(dbPatients);
       if (dbTemplates.length > 0) {
-        // Check if templates need upgrade to simple redaksi
-        const hasMissingObatTemplates = !dbTemplates.some(t => t.id === 'tmpl-obat-siang') || !dbTemplates.some(t => t.id === 'tmpl-obat-malam');
-        const hasOldGenericObat = dbTemplates.some(t => t.category === 'minum_obat' && !t.templateText.includes('{nama_pasien}'));
-        const hasOldGenericKontrol = dbTemplates.some(t => t.category === 'kontrol_dokter' && !t.templateText.includes('{nama_pasien}'));
-        const hasOldGenericIter = dbTemplates.some(t => t.id === 'tmpl-iter-resep' && (!t.templateText.includes('{ketentuan_kehadiran_iter}') || !t.templateText.includes('{iter_ke}')));
-        const hasOldVerboseFields = dbTemplates.some(t => t.templateText.includes('{nomor_rm}') || t.templateText.includes('{dokter_dpjp}'));
+        // Bandingkan templateText di DB vs INITIAL_TEMPLATES
+        // Jika ada yang berbeda, paksa update ke versi terbaru dari initialData
+        const needsUpgrade = INITIAL_TEMPLATES.some(initTmpl => {
+          const dbTmpl = dbTemplates.find(t => t.id === initTmpl.id);
+          if (!dbTmpl) return true; // template baru belum ada di DB
+          return dbTmpl.templateText.trim() !== initTmpl.templateText.trim();
+        });
 
-        if (hasMissingObatTemplates || hasOldGenericObat || hasOldGenericKontrol || hasOldGenericIter || hasOldVerboseFields) {
-          console.log('[Supabase] Mengupgrade template ke format simpel terbaru...');
+        if (needsUpgrade) {
+          console.log('[Supabase] Mendeteksi perubahan template — mengupdate ke versi terbaru...');
+          // Gabungkan: pakai INITIAL_TEMPLATES sebagai base (teks terbaru),
+          // tapi pertahankan field lain dari DB jika ada (misal customisasi user)
           const upgradedTemplates = INITIAL_TEMPLATES.map(initTmpl => {
             const existing = dbTemplates.find(t => t.id === initTmpl.id);
-            if (!existing) return initTmpl;
-            if (existing.templateText.includes('{nomor_rm}') || existing.templateText.includes('{dokter_dpjp}')) return initTmpl;
-            if (initTmpl.id === 'tmpl-iter-resep' && (!existing.templateText.includes('{ketentuan_kehadiran_iter}') || !existing.templateText.includes('{iter_ke}'))) return initTmpl;
-            if (!existing.templateText.includes('{nama_pasien}')) return initTmpl;
-            return existing;
+            // Selalu pakai templateText terbaru dari initialData
+            return existing ? { ...existing, templateText: initTmpl.templateText } : initTmpl;
           });
           setTemplates(upgradedTemplates);
           upsertTemplates(upgradedTemplates).catch(e => console.error('[Supabase] Gagal upsert upgraded templates:', e));
