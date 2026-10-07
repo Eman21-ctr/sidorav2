@@ -37,8 +37,6 @@ export const Navbar = ({
       id: 'kirim_pesan' as NavTab,
       label: 'Kirim Pesan',
       icon: Send,
-      badge: pendingSendCount && pendingSendCount > 0 ? `${pendingSendCount} pending` : undefined,
-      badgeColor: 'bg-amber-500',
     },
   ];
 

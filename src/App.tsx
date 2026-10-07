@@ -746,7 +746,6 @@ export default function App() {
         onTriggerQuickSend={handleTriggerQuickSend}
         unreadRepliesCount={unreadRepliesCount}
         pendingQueueCount={patients.length}
-        pendingSendCount={estimatedPendingSend}
       />
 
       {/* Main Content Area */}
