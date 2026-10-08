@@ -28,7 +28,15 @@ export const Navbar = ({
   pendingSendCount,
 }: NavbarProps) => {
   // Main tabs
-  const primaryTabs = [
+  interface TabItem {
+    id: NavTab;
+    label: string;
+    icon: any;
+    badge?: string;
+    badgeColor?: string;
+  }
+
+  const primaryTabs: TabItem[] = [
     { id: 'dashboard' as NavTab, label: 'Dasbor Utama', icon: Activity },
     { id: 'manual_dashboard' as NavTab, label: 'Dasbor Entri Manual', icon: ClipboardEdit },
     { id: 'pasien' as NavTab, label: 'Data Pasien & Caregiver', icon: Users },
@@ -37,6 +45,7 @@ export const Navbar = ({
       id: 'kirim_pesan' as NavTab,
       label: 'Kirim Pesan',
       icon: Send,
+      badge: pendingSendCount && pendingSendCount > 0 ? `${pendingSendCount}` : undefined,
     },
   ];
 
@@ -70,10 +79,10 @@ export const Navbar = ({
 
       {/* Navigation Tabs Bar - Simplified to 3 Core Menus + Secondary Tools */}
       <div className="border-t border-slate-200 bg-slate-50/80 overflow-x-auto scrollbar-none">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-4 min-w-max">
           
-          {/* 3 Main Menus */}
-          <nav className="flex space-x-1.5 sm:space-x-2 py-2 min-w-max">
+          {/* Main Menus */}
+          <nav className="flex space-x-1.5 sm:space-x-2 py-2 shrink-0">
             {primaryTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = currentTab === tab.id;
@@ -81,7 +90,7 @@ export const Navbar = ({
                 <button
                   key={tab.id}
                   onClick={() => onSelectTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
                     isActive
                       ? 'bg-white text-emerald-900 shadow-xs border border-emerald-300 font-bold'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
@@ -104,8 +113,8 @@ export const Navbar = ({
           </nav>
 
           {/* Secondary Tools (Simulator & Logs) */}
-          <div className="hidden sm:flex items-center gap-1.5 py-2 pl-4 border-l border-slate-200 text-xs shrink-0">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">
+          <div className="flex items-center gap-1.5 py-2 pl-3 sm:pl-4 border-l border-slate-200 text-xs shrink-0">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1 whitespace-nowrap">
               Alat Tambahan:
             </span>
             {secondaryTabs.map((tab) => {
@@ -115,7 +124,7 @@ export const Navbar = ({
                 <button
                   key={tab.id}
                   onClick={() => onSelectTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                     isActive
                       ? 'bg-slate-200 text-slate-900 font-bold'
                       : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
