@@ -635,32 +635,24 @@ export default function App() {
   // ============================================================
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center gap-6 p-4">
-        <div className="relative">
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-500 flex items-center justify-center p-4 text-white shadow-2xl shadow-emerald-500/30 border border-emerald-400/30 animate-pulse">
-            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-md">
-              <rect x="17" y="6" width="6" height="28" rx="3" fill="white" />
-              <rect x="6" y="17" width="28" height="6" rx="3" fill="white" />
-              <circle cx="20" cy="20" r="4.5" fill="#34d399" />
-              <circle cx="20" cy="20" r="2" fill="white" />
-              <circle cx="20" cy="6" r="1.8" fill="#a7f3d0" />
-              <circle cx="20" cy="34" r="1.8" fill="#a7f3d0" />
-              <circle cx="6" cy="20" r="1.8" fill="#a7f3d0" />
-              <circle cx="34" cy="20" r="1.8" fill="#a7f3d0" />
-            </svg>
-          </div>
-          <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-slate-900 border-2 border-emerald-400 flex items-center justify-center shadow-lg">
-            <Loader2 className="w-4 h-4 text-emerald-400 animate-spin" />
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-8 p-4">
+        {/* Logo Sidora */}
+        <div className="flex flex-col items-center gap-6">
+          <img
+            src="/logo-sidora.png"
+            alt="Sidora Logo"
+            className="w-72 sm:w-80 object-contain animate-pulse"
+            style={{ filter: 'drop-shadow(0 4px 24px rgba(29,78,216,0.15))' }}
+          />
+          <div className="flex items-center gap-2 text-slate-500 text-sm">
+            <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+            <span>Menghubungkan ke Supabase Cloud Database...</span>
           </div>
         </div>
-        <div className="text-center space-y-2">
-          <h2 className="text-2xl font-extrabold text-white tracking-tight">
-            SIDO<span className="text-emerald-400">RA</span>
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-400">Menghubungkan ke Supabase Cloud Database...</p>
-        </div>
-        <div className="w-52 h-1.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
-          <div className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 rounded-full animate-pulse" style={{ width: '75%' }} />
+
+        {/* Progress bar */}
+        <div className="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+          <div className="h-full bg-gradient-to-r from-teal-500 via-blue-600 to-blue-700 rounded-full animate-pulse" style={{ width: '75%' }} />
         </div>
       </div>
     );
