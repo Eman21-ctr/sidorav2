@@ -43,6 +43,7 @@ export const NotificationTemplates = ({
     : { body: currentTemplate?.templateText || '', recipientName: 'Pasien/Caregiver', recipientPhone: '0812xxxx' };
 
   const availableVariables = [
+    { tag: '{sapaan}', label: 'Panggilan Gender Pasien', example: 'Bapak (L) / Ibu (P)' },
     { tag: '{nama_pasien}', label: 'Nama Pasien', example: 'Bambang Triyono' },
     { tag: '{nama_caregiver}', label: 'Nama Caregiver', example: 'Siti Aminah' },
     { tag: '{hubungan_caregiver}', label: 'Hubungan', example: 'Ibu Kandung' },

@@ -48,12 +48,17 @@ export function generatePersonalizedMessage(
     || (isCaregiver ? `${patient.caregiver.nama} (${patient.caregiver.hubungan})` : patient.nama);
   const recipientPhone = options?.customRecipientPhone
     || (isCaregiver ? patient.caregiver.noTelepon : patient.noTelepon);
+  // Panggilan spesifik sesuai jenis kelamin pasien (L = Bapak, P = Ibu)
+  const isLaki = patient.jenisKelamin === 'L' || String(patient.jenisKelamin || '').toUpperCase().startsWith('L');
+  const sapaan = isLaki ? 'Bapak' : 'Ibu';
+  const sapaanKecil = isLaki ? 'bapak' : 'ibu';
+
   const panggilan = options?.customPanggilan 
     || (options?.customRecipientName 
-      ? `Bapak/Ibu ${options.customRecipientName}` 
+      ? `${sapaan} ${options.customRecipientName}` 
       : (isCaregiver
-        ? `Bapak/Ibu ${patient.caregiver.nama}`
-        : (patient.jenisKelamin === 'L' ? `Bapak ${patient.nama}` : `Ibu ${patient.nama}`)));
+        ? `${sapaan} ${patient.caregiver.nama}`
+        : `${sapaan} ${patient.nama}`));
 
   // Medications list by time
   const inferredTime: 'pagi' | 'siang' | 'malam' =
@@ -84,6 +89,10 @@ export function generatePersonalizedMessage(
 
   const replacements: Record<string, string> = {
     '{nama_pasien}': patient.nama,
+    '{sapaan}': sapaan,
+    '{sapaan_pasien}': sapaan,
+    '{bapak_ibu}': sapaan,
+    '{Bapak/Ibu}': sapaan,
     '{nama_caregiver}': patient.caregiver.nama,
     '{hubungan_caregiver}': patient.caregiver.hubungan,
     '{nama_panggilan}': panggilan,
@@ -149,6 +158,12 @@ export function generatePersonalizedMessage(
   for (const [key, value] of Object.entries(replacements)) {
     text = text.replaceAll(key, value);
   }
+
+  // Penggantian otomatis jika di template masih tertulis frasa literal 'Bapak/Ibu'
+  // agar panggilan Bapak/Ibu spesifik sesuai dengan jenis kelamin pasien
+  text = text.replace(/Bapak\s*\/\s*Ibu/g, sapaan);
+  text = text.replace(/bapak\s*\/\s*ibu/g, sapaanKecil);
+  text = text.replace(/BAPAK\s*\/\s*IBU/g, sapaan.toUpperCase());
 
   return {
     body: text,

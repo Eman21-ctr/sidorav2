@@ -819,9 +819,10 @@ export const UnifiedMessageAutomation = ({
                   <span className="font-bold text-emerald-800 block mb-1.5">💊 Variabel Khusus Obat {obatSubSesi === 'pagi' ? 'Pagi' : obatSubSesi === 'siang' ? 'Siang' : 'Malam'} (Klik untuk sisipkan):</span>
                   <div className="flex flex-wrap gap-1.5 font-mono text-[11px]">
                     {[
+                      '{sapaan}',
+                      '{nama_pasien}',
                       obatSubSesi === 'pagi' ? '{daftar_obat_pagi}' : obatSubSesi === 'siang' ? '{daftar_obat_siang}' : '{daftar_obat_malam}',
                       '{jam_minum}',
-                      '{nama_pasien}',
                       '{nomor_rm}',
                       '{dokter_dpjp}',
                       '{nama_panggilan}',
@@ -843,7 +844,7 @@ export const UnifiedMessageAutomation = ({
                     ))}
                   </div>
                   <p className="text-emerald-700 mt-2 leading-relaxed">
-                    Variabel <strong>{obatSubSesi === 'pagi' ? '{daftar_obat_pagi}' : obatSubSesi === 'siang' ? '{daftar_obat_siang}' : '{daftar_obat_malam}'}</strong> akan diisi otomatis daftar obat {obatSubSesi} tiap pasien dari database, beserta dosis dan aturan pakainya.
+                    💡 Variabel <strong>{'{sapaan}'}</strong> otomatis menjadi <em>&quot;Bapak&quot;</em> untuk pasien laki-laki atau <em>&quot;Ibu&quot;</em> untuk perempuan. Variabel <strong>{obatSubSesi === 'pagi' ? '{daftar_obat_pagi}' : obatSubSesi === 'siang' ? '{daftar_obat_siang}' : '{daftar_obat_malam}'}</strong> diisi otomatis daftar obat {obatSubSesi} tiap pasien dari database, beserta dosis dan aturan pakainya.
                   </p>
                 </div>
 
@@ -898,8 +899,9 @@ export const UnifiedMessageAutomation = ({
                   <span className="font-bold text-teal-800 block mb-1.5">📅 Variabel Template Kontrol Dokter (Klik untuk sisipkan):</span>
                   <div className="flex flex-wrap gap-1.5 font-mono text-[11px]">
                     {[
-                      '{nama_panggilan}',
+                      '{sapaan}',
                       '{nama_pasien}',
+                      '{nama_panggilan}',
                       '{tanggal_kontrol}',
                       '{jam_kontrol}',
                       '{hotline_rsj}',
@@ -919,6 +921,9 @@ export const UnifiedMessageAutomation = ({
                       </button>
                     ))}
                   </div>
+                  <p className="text-teal-700 mt-2 text-[11px] leading-relaxed">
+                    💡 Variabel <strong>{'{sapaan}'}</strong> otomatis disesuaikan menjadi <em>&quot;Bapak&quot;</em> (L) atau <em>&quot;Ibu&quot;</em> (P) sesuai jenis kelamin pasien.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <label className="font-bold text-slate-800 text-xs block">
@@ -964,8 +969,9 @@ export const UnifiedMessageAutomation = ({
                   <span className="font-bold text-sky-800 block mb-1.5">🔄 Variabel Template Jadwal Iter (Klik untuk sisipkan):</span>
                   <div className="flex flex-wrap gap-1.5 font-mono text-[11px]">
                     {[
-                      '{nama_panggilan}',
+                      '{sapaan}',
                       '{nama_pasien}',
+                      '{nama_panggilan}',
                       '{nomor_rm}',
                       '{tanggal_iter}',
                       '{iter_ke}',
@@ -989,7 +995,7 @@ export const UnifiedMessageAutomation = ({
                     ))}
                   </div>
                   <p className="text-sky-700 mt-2 text-[11px] leading-relaxed">
-                    Variabel <strong>{'{ketentuan_kehadiran_iter}'}</strong> akan secara otomatis membedakan pesan: menyatakan <em>"Boleh diwakili"</em> pada iter 1 & 2, atau <em>"Wajib bersama pasien"</em> saat iter ke-3.
+                    💡 Variabel <strong>{'{sapaan}'}</strong> otomatis menyesuaikan <em>&quot;Bapak&quot;</em> (L) atau <em>&quot;Ibu&quot;</em> (P). Variabel <strong>{'{ketentuan_kehadiran_iter}'}</strong> secara otomatis membedakan pesan: menyatakan <em>&quot;Boleh diwakili&quot;</em> pada iter 1 &amp; 2, atau <em>&quot;Wajib bersama pasien&quot;</em> saat iter ke-3.
                   </p>
                 </div>
                 <div className="space-y-2">
