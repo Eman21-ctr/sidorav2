@@ -493,16 +493,21 @@ export default function App() {
           ? patient.jadwalIterList
           : (patient.jadwalIter.tanggalIter ? [{
               id: 'iter-1',
-              nomorIter: 1,
+              nomorIter: patient.jadwalIter.nomorIter || 1,
               tanggal: patient.jadwalIter.tanggalIter,
               jam: (patient.jadwalIter as any).jam || '08:30',
               nomorResep: patient.jadwalIter.nomorResep,
               statusPengambilan: patient.jadwalIter.statusPengambilan || 'belum_diambil' as const,
-              label: 'Iter 1',
+              label: `Iter ${patient.jadwalIter.nomorIter || 1}`,
             }] : []);
 
-        const sisaIterasi = iterList.filter(it => it.statusPengambilan !== 'sudah_diambil').length;
-        const totalIterasi = iterList.length;
+        const sisaIterasi = iterList.filter(it => it.statusPengambilan !== 'sudah_diambil').length || 1;
+        const totalIterasi = Math.max(
+          patient.jadwalIter?.totalIterasi || 0,
+          ...iterList.map(it => it.nomorIter || 0),
+          iterList.length,
+          3
+        );
 
         iterList.forEach((iter) => {
           if (!iter.tanggal) return;

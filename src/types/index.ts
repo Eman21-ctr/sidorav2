@@ -86,6 +86,7 @@ export interface Patient {
       h0Sent: boolean;
     };
     statusPengambilan?: 'belum_diambil' | 'sudah_diambil';
+    nomorIter?: number; // 1, 2, 3 (nomor iterasi aktif)
   };
 
   // Daftar Jadwal Iter Multiple (Maks 3: Iter 1, Iter 2, Iter 3)

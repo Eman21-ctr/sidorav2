@@ -26,7 +26,7 @@ import {
   FileBarChart2
 } from 'lucide-react';
 import { Patient, WhatsAppMessage, MessageTemplate, BSPConfig, ReminderCategory } from '../types';
-import { generatePersonalizedMessage } from '../utils/messageGenerator';
+import { generatePersonalizedMessage, resolvePatientIterDetails } from '../utils/messageGenerator';
 
 interface WhatsAppSimulatorProps {
   patients: Patient[];
@@ -66,12 +66,49 @@ export const WhatsAppSimulator = ({
 
   // Composer state
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(templates[0]?.id || 'custom');
+  const [selectedIterNomor, setSelectedIterNomor] = useState<number | null>(null);
   const [isCustomTemplate, setIsCustomTemplate] = useState(false);
   const [customMessageBody, setCustomMessageBody] = useState('');
   const [simulatedReplyText, setSimulatedReplyText] = useState('');
 
   const activePatient = patients.find(p => p.id === selectedPatientId) || patients[0];
   const activeTemplate = templates.find(t => t.id === selectedTemplateId) || templates[0];
+
+  // Reset selectedIterNomor jika pasien atau template berubah
+  useEffect(() => {
+    setSelectedIterNomor(null);
+  }, [selectedPatientId, selectedTemplateId]);
+
+  const resolvedIterInfo = activePatient ? resolvePatientIterDetails(activePatient) : null;
+
+  const iterListForPatient = activePatient?.jadwalIterList && activePatient.jadwalIterList.length > 0
+    ? activePatient.jadwalIterList
+    : (activePatient?.jadwalIter?.adaIter && activePatient?.jadwalIter?.tanggalIter && activePatient.jadwalIter.tanggalIter !== '-')
+    ? [
+        {
+          id: 'iter-default',
+          nomorIter: activePatient.jadwalIter.nomorIter || resolvedIterInfo?.iterKe || 1,
+          tanggal: activePatient.jadwalIter.tanggalIter,
+          jam: (activePatient.jadwalIter as any)?.jam || '08:30',
+          nomorResep: activePatient.jadwalIter.nomorResep,
+          statusPengambilan: activePatient.jadwalIter.statusPengambilan || ('belum_diambil' as const),
+          label: `Iter ${activePatient.jadwalIter.nomorIter || resolvedIterInfo?.iterKe || 1}`,
+        }
+      ]
+    : [];
+
+  const selectedIterItem = selectedIterNomor !== null
+    ? iterListForPatient.find(it => it.nomorIter === selectedIterNomor)
+    : undefined;
+
+  const customJadwalForPreview = selectedIterItem
+    ? {
+        tanggal: selectedIterItem.tanggal,
+        jam: selectedIterItem.jam || '08:30',
+        nomorResep: selectedIterItem.nomorResep || activePatient?.jadwalIter?.nomorResep,
+        iterKe: selectedIterItem.nomorIter,
+      }
+    : undefined;
 
   // Derive target recipient info from patient
   const currentRecipientName = recipientType === 'caregiver'
@@ -91,7 +128,9 @@ export const WhatsAppSimulator = ({
 
   // Generate personalized text for preview
   const preview = activePatient && activeTemplate && !isCustomTemplate
-    ? generatePersonalizedMessage(activeTemplate, activePatient, recipientType)
+    ? generatePersonalizedMessage(activeTemplate, activePatient, recipientType, {
+        customJadwal: customJadwalForPreview,
+      })
     : {
         body: customMessageBody || 'Selamat pagi. Ini adalah pesan pengingat dari Sidora RSJ Naimata.',
         recipientName: currentRecipientName || 'Penerima',
@@ -568,6 +607,53 @@ export const WhatsAppSimulator = ({
                   ))}
                 </select>
               ) : null}
+
+              {/* Selector Pilihan Jadwal Iter (Jika kategori iter_resep) */}
+              {!isCustomTemplate && activeTemplate.category === 'iter_resep' && iterListForPatient.length > 0 && (
+                <div className="p-3 bg-teal-50/70 border border-teal-200/90 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between text-xs font-semibold text-teal-900">
+                    <span className="flex items-center gap-1.5">
+                      <RefreshCw className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                      Pilih Iterasi yang Dikirim:
+                    </span>
+                    <span className="text-[10px] text-teal-700 font-normal">
+                      (Otomatis terhubung ke data resep pasien)
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {iterListForPatient.map((it) => {
+                      const activeNum = selectedIterItem
+                        ? selectedIterItem.nomorIter
+                        : (resolvedIterInfo?.iterKe || 1);
+                      const isCurrent = it.nomorIter === activeNum;
+                      return (
+                        <button
+                          key={it.id || it.nomorIter}
+                          type="button"
+                          onClick={() => setSelectedIterNomor(it.nomorIter)}
+                          className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                            isCurrent
+                              ? 'bg-teal-700 text-white shadow-2xs'
+                              : 'bg-white text-teal-800 border border-teal-200 hover:bg-teal-100/70'
+                          }`}
+                        >
+                          <span>{it.label || `Iter ${it.nomorIter}`}</span>
+                          {it.tanggal && it.tanggal !== '-' ? (
+                            <span className={`text-[10px] font-normal ${isCurrent ? 'text-teal-100' : 'text-slate-500'}`}>
+                              ({it.tanggal})
+                            </span>
+                          ) : (
+                            <span className={`text-[10px] italic font-normal ${isCurrent ? 'text-teal-200' : 'text-slate-400'}`}>
+                              (tanpa tanggal)
+                            </span>
+                          )}
+                          {it.nomorIter >= 3 && <span className="text-[10px]" title="Wajib hadir pasien langsung">⚠️</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Editable or Preview Textarea */}
               <div className="space-y-1.5">

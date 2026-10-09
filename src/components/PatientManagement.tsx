@@ -229,7 +229,7 @@ export const PatientManagement = ({
 
     const validIterList = (formData.jadwalIterList || []).filter(it => it.tanggal && it.tanggal.trim() !== '');
     const adaIter = !!formData.jadwalIter?.adaIter && validIterList.length > 0;
-    const firstIter = validIterList[0];
+    const firstIter = validIterList.find(it => it.statusPengambilan !== 'sudah_diambil') || validIterList[0];
 
     const finalPatientData: Patient = {
       ...(formData as Patient),
@@ -257,9 +257,18 @@ export const PatientManagement = ({
           statusReminder: { h2Sent: false, h0Sent: false },
         }),
         adaIter,
+        nomorIter: adaIter ? (firstIter?.nomorIter || 1) : 1,
         nomorResep: adaIter ? (firstIter?.nomorResep || formData.jadwalIter?.nomorResep || '-') : '-',
         tanggalIter: adaIter ? (firstIter?.tanggal || '-') : '-',
-        totalIterasi: adaIter ? validIterList.length : 0,
+        totalIterasi: adaIter
+          ? Math.max(
+              formData.jadwalIter?.totalIterasi || 0,
+              firstIter?.nomorIter || 0,
+              (formData.jadwalIterList || []).reduce((max, it) => Math.max(max, it.nomorIter || 0), 0),
+              (formData.jadwalIterList || []).length,
+              3
+            )
+          : 0,
         sisaIterasi: adaIter
           ? validIterList.filter(it => it.statusPengambilan !== 'sudah_diambil').length
           : 0,
@@ -1216,24 +1225,26 @@ export const PatientManagement = ({
                         <button
                           type="button"
                           onClick={() => {
-                            const list = formData.jadwalIterList || [];
-                            if (list.length >= 3) return;
-                            const nextNomor = list.length + 1;
-                            setFormData({
-                              ...formData,
-                              jadwalIterList: [
-                                ...list,
-                                {
-                                  id: `iter-${nextNomor}`,
-                                  nomorIter: nextNomor,
-                                  tanggal: '',
-                                  jam: '08:30',
-                                  nomorResep: formData.jadwalIter?.nomorResep || '',
-                                  statusPengambilan: 'belum_diambil' as const,
-                                  label: `Iter ${nextNomor}`,
-                                },
-                              ],
-                            });
+                          const list = formData.jadwalIterList || [];
+                          if (list.length >= 3) return;
+                          const existingNomors = list.map(it => it.nomorIter || 0);
+                          const nextNomor = [1, 2, 3].find(n => !existingNomors.includes(n)) || (list.length + 1);
+                          const updatedList = [
+                            ...list,
+                            {
+                              id: `iter-${nextNomor}`,
+                              nomorIter: nextNomor,
+                              tanggal: '',
+                              jam: '08:30',
+                              nomorResep: formData.jadwalIter?.nomorResep || '',
+                              statusPengambilan: 'belum_diambil' as const,
+                              label: `Iter ${nextNomor}`,
+                            },
+                          ].sort((a, b) => (a.nomorIter || 0) - (b.nomorIter || 0));
+                          setFormData({
+                            ...formData,
+                            jadwalIterList: updatedList,
+                          });
                           }}
                           disabled={(formData.jadwalIterList || []).length >= 3}
                           className="text-xs font-semibold text-teal-700 hover:text-teal-900 flex items-center gap-1 disabled:opacity-40"

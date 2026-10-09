@@ -198,11 +198,11 @@ function buildDailyQueue(
           : [
               {
                 id: 'iter-1',
-                nomorIter: 1,
+                nomorIter: patient.jadwalIter.nomorIter || 1,
                 tanggal: patient.jadwalIter.tanggalIter,
                 nomorResep: patient.jadwalIter.nomorResep,
                 statusPengambilan: patient.jadwalIter.statusPengambilan || 'belum_diambil',
-                label: 'Iter 1',
+                label: `Iter ${patient.jadwalIter.nomorIter || 1}`,
               } as const,
             ];
 
@@ -217,14 +217,22 @@ function buildDailyQueue(
         else if (diff === 0) tag = 'Hari H (Hari Ini!)';
         else return;
 
+        const totalIterasiCalc = Math.max(
+          patient.jadwalIter?.totalIterasi || 0,
+          iter.nomorIter || 0,
+          iterList.length,
+          3
+        );
+        const sisaIterasiCalc = iterList.filter((it) => it.statusPengambilan !== 'sudah_diambil').length || 1;
+
         const msgIter = generatePersonalizedMessage(tmplIter, patient, 'caregiver', {
           customJadwal: {
             tanggal: iter.tanggal,
             jam: ('jam' in iter && iter.jam) ? iter.jam : '08:30',
             nomorResep: iter.nomorResep || patient.jadwalIter?.nomorResep,
             iterKe: iter.nomorIter,
-            totalIterasi: iterList.length,
-            sisaIterasi: iterList.filter((it) => it.statusPengambilan !== 'sudah_diambil').length,
+            totalIterasi: totalIterasiCalc,
+            sisaIterasi: sisaIterasiCalc,
           },
         });
         if (!msgIter.recipientPhone) return;

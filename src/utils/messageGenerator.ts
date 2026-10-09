@@ -22,6 +22,141 @@ export function formatIndonesianDate(dateStr: string): string {
   }
 }
 
+/**
+ * Helper untuk menentukan detail iterasi resep pasien secara akurat:
+ * - Mengambil iterKe (1, 2, 3) langsung dari data pasien (jadwalIterList / jadwalIter.nomorIter),
+ *   bukan sekadar rumus selisih (total - sisa + 1) yang bisa keliru saat iter awal dilewati.
+ * - Menyelaraskan tanggal iter, jam, nomor resep, total iterasi, dan sisa iterasi.
+ */
+export function resolvePatientIterDetails(
+  patient: Patient,
+  customJadwal?: {
+    tanggal?: string;
+    jam?: string;
+    dokter?: string;
+    poli?: string;
+    iterKe?: number;
+    nomorResep?: string;
+    totalIterasi?: number;
+    sisaIterasi?: number;
+  }
+) {
+  const iterList = patient.jadwalIterList || [];
+
+  // Cari item jadwal iter yang paling relevan dari jadwalIterList
+  let matchedItem: (typeof iterList)[0] | undefined;
+
+  // 1. Jika caller memberikan iterKe secara eksplisit
+  if (customJadwal?.iterKe) {
+    matchedItem = iterList.find(it => it.nomorIter === customJadwal.iterKe);
+  }
+
+  // 2. Jika ada tanggal spesifik di customJadwal
+  if (!matchedItem && customJadwal?.tanggal && customJadwal.tanggal !== '-') {
+    matchedItem = iterList.find(it => it.tanggal === customJadwal.tanggal);
+  }
+
+  // 3. Jika cocok dengan tanggal di patient.jadwalIter.tanggalIter
+  if (!matchedItem && patient.jadwalIter?.tanggalIter && patient.jadwalIter.tanggalIter !== '-') {
+    matchedItem = iterList.find(it => it.tanggal === patient.jadwalIter.tanggalIter);
+  }
+
+  // 4. Cari iter terdekat yang belum diambil dan bertanggal
+  if (!matchedItem) {
+    matchedItem = iterList.find(
+      it => it.tanggal && it.tanggal.trim() !== '' && it.tanggal !== '-' && it.statusPengambilan !== 'sudah_diambil'
+    );
+  }
+
+  // 5. Cari iter manapun yang memiliki tanggal terisi
+  if (!matchedItem) {
+    matchedItem = iterList.find(it => it.tanggal && it.tanggal.trim() !== '' && it.tanggal !== '-');
+  }
+
+  // 6. Fallback ke item pertama jika ada
+  if (!matchedItem && iterList.length > 0) {
+    matchedItem = iterList[0];
+  }
+
+  // Ekstrak nomor iter
+  let iterKe = 1;
+  if (customJadwal?.iterKe) {
+    iterKe = customJadwal.iterKe;
+  } else if (matchedItem) {
+    iterKe = matchedItem.nomorIter
+      || (matchedItem.label ? parseInt(matchedItem.label.replace(/\D/g, ''), 10) : undefined)
+      || (matchedItem.id ? parseInt(matchedItem.id.replace(/\D/g, ''), 10) : undefined)
+      || 1;
+  } else if (patient.jadwalIter?.nomorIter) {
+    iterKe = patient.jadwalIter.nomorIter;
+  } else if (patient.jadwalIter?.totalIterasi && patient.jadwalIter?.sisaIterasi !== undefined) {
+    iterKe = Math.max(1, patient.jadwalIter.totalIterasi - patient.jadwalIter.sisaIterasi + 1);
+  }
+
+  // Tanggal iter
+  const targetTglIter = customJadwal?.tanggal 
+    || matchedItem?.tanggal 
+    || patient.jadwalIter?.tanggalIter 
+    || '';
+
+  // Nomor resep
+  const targetNomorResep = customJadwal?.nomorResep 
+    || matchedItem?.nomorResep 
+    || patient.jadwalIter?.nomorResep 
+    || '';
+
+  // Total iterasi: ambil yang terbesar dari custom, data pasien, iterKe, atau minimal 3 jika iterKe >= 3
+  const maxNomorInList = iterList.reduce((max, it) => Math.max(max, it.nomorIter || 0), 0);
+  const totalIter = customJadwal?.totalIterasi 
+    || Math.max(
+        patient.jadwalIter?.totalIterasi || 0,
+        maxNomorInList,
+        iterList.length,
+        iterKe,
+        iterKe >= 3 ? 3 : 1
+      ) 
+    || 3;
+
+  // Sisa iterasi
+  let sisaIter = 1;
+  if (customJadwal?.sisaIterasi !== undefined) {
+    sisaIter = customJadwal.sisaIterasi;
+  } else {
+    const uncollectedWithDate = iterList.filter(
+      it => it.statusPengambilan !== 'sudah_diambil' && it.tanggal && it.tanggal.trim() !== '' && it.tanggal !== '-'
+    ).length;
+    if (uncollectedWithDate > 0) {
+      sisaIter = uncollectedWithDate;
+    } else if (patient.jadwalIter?.sisaIterasi !== undefined && patient.jadwalIter.sisaIterasi > 0) {
+      sisaIter = patient.jadwalIter.sisaIterasi;
+    } else {
+      sisaIter = Math.max(1, totalIter - iterKe + 1);
+    }
+  }
+
+  const isIter3OrMore = iterKe >= 3;
+
+  // Jam iter
+  const targetJamIterRaw = customJadwal?.jam
+    || matchedItem?.jam
+    || (iterList.find(it => it.nomorIter === iterKe)?.jam)
+    || iterList[0]?.jam
+    || (patient.jadwalIter as any)?.jam
+    || '08:30';
+  const targetJamIter = targetJamIterRaw.replace(/\s*WITA/gi, '').trim() || '08:30';
+
+  return {
+    iterKe,
+    targetTglIter,
+    targetNomorResep,
+    totalIter,
+    sisaIter,
+    targetJamIter,
+    isIter3OrMore,
+    matchedItem,
+  };
+}
+
 export function generatePersonalizedMessage(
   template: MessageTemplate,
   patient: Patient,
@@ -79,18 +214,15 @@ export function generatePersonalizedMessage(
   const targetDokterKontrol = options?.customJadwal?.dokter || patient.jadwalKontrol?.dokter || patient.dokterDPJP;
   const targetPoliKontrol = options?.customJadwal?.poli || patient.jadwalKontrol?.poli || patient.poliklinik;
 
-  const targetTglIter = options?.customJadwal?.tanggal || patient.jadwalIter?.tanggalIter || '';
-  const targetNomorResep = options?.customJadwal?.nomorResep || patient.jadwalIter?.nomorResep || '';
-  const totalIter = options?.customJadwal?.totalIterasi || patient.jadwalIter?.totalIterasi || 3;
-  const sisaIter = options?.customJadwal?.sisaIterasi ?? patient.jadwalIter?.sisaIterasi ?? 1;
-  const iterKe = options?.customJadwal?.iterKe ?? Math.max(1, totalIter - sisaIter + 1);
-  const isIter3OrMore = iterKe >= 3;
-
-  const targetJamIterRaw = options?.customJadwal?.jam 
-    || (patient.jadwalIterList && patient.jadwalIterList.length > 0 ? (patient.jadwalIterList.find(it => it.nomorIter === iterKe)?.jam || patient.jadwalIterList[0]?.jam) : '')
-    || (patient.jadwalIter as any)?.jam
-    || '08:30';
-  const targetJamIter = targetJamIterRaw.replace(/\s*WITA/gi, '').trim() || '08:30';
+  const {
+    iterKe,
+    targetTglIter,
+    targetNomorResep,
+    totalIter,
+    sisaIter,
+    targetJamIter,
+    isIter3OrMore,
+  } = resolvePatientIterDetails(patient, options?.customJadwal);
 
   let text = template.templateText;
 
