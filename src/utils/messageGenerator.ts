@@ -74,7 +74,8 @@ export function generatePersonalizedMessage(
 
   // Schedule overrides if provided
   const targetTglKontrol = options?.customJadwal?.tanggal || patient.jadwalKontrol?.tanggal || '';
-  const targetJamKontrol = options?.customJadwal?.jam || patient.jadwalKontrol?.jam || '09:00';
+  const targetJamKontrolRaw = options?.customJadwal?.jam || patient.jadwalKontrol?.jam || '09:00';
+  const targetJamKontrol = targetJamKontrolRaw.replace(/\s*WITA/gi, '').trim() || '09:00';
   const targetDokterKontrol = options?.customJadwal?.dokter || patient.jadwalKontrol?.dokter || patient.dokterDPJP;
   const targetPoliKontrol = options?.customJadwal?.poli || patient.jadwalKontrol?.poli || patient.poliklinik;
 
@@ -84,6 +85,12 @@ export function generatePersonalizedMessage(
   const sisaIter = options?.customJadwal?.sisaIterasi ?? patient.jadwalIter?.sisaIterasi ?? 1;
   const iterKe = options?.customJadwal?.iterKe ?? Math.max(1, totalIter - sisaIter + 1);
   const isIter3OrMore = iterKe >= 3;
+
+  const targetJamIterRaw = options?.customJadwal?.jam 
+    || (patient.jadwalIterList && patient.jadwalIterList.length > 0 ? (patient.jadwalIterList.find(it => it.nomorIter === iterKe)?.jam || patient.jadwalIterList[0]?.jam) : '')
+    || (patient.jadwalIter as any)?.jam
+    || '08:30';
+  const targetJamIter = targetJamIterRaw.replace(/\s*WITA/gi, '').trim() || '08:30';
 
   let text = template.templateText;
 
@@ -115,10 +122,15 @@ export function generatePersonalizedMessage(
     '{jam_minum}': `${jamMinum} WITA`,
     '{tanggal_kontrol}': formatIndonesianDate(targetTglKontrol),
     '{jam_kontrol}': targetJamKontrol,
+    '{jam_kontrol_wita}': `${targetJamKontrol} WITA`,
+    '{waktu_kontrol}': `${targetJamKontrol} WITA`,
     '{dokter_dpjp}': patient.dokterDPJP,
     '{poliklinik}': patient.poliklinik,
     '{nomor_resep}': targetNomorResep,
     '{tanggal_iter}': formatIndonesianDate(targetTglIter),
+    '{jam_iter}': targetJamIter,
+    '{jam_iter_wita}': `${targetJamIter} WITA`,
+    '{waktu_iter}': `${targetJamIter} WITA`,
     '{sisa_iter}': `${sisaIter}x dari total ${totalIter}x pengulangan`,
     '{iter_ke}': `Iter ke-${iterKe}`,
     '{iter_ke_teks}': (() => {
@@ -163,7 +175,8 @@ export function generatePersonalizedMessage(
   // agar panggilan Bapak/Ibu spesifik sesuai dengan jenis kelamin pasien
   text = text.replace(/Bapak\s*\/\s*Ibu/g, sapaan);
   text = text.replace(/bapak\s*\/\s*ibu/g, sapaanKecil);
-  text = text.replace(/BAPAK\s*\/\s*IBU/g, sapaan.toUpperCase());
+  // Bersihkan jika ada duplikasi kata WITA (misal jika user mengetik {jam_kontrol_wita} WITA)
+  text = text.replace(/WITA\s+WITA/gi, 'WITA');
 
   return {
     body: text,

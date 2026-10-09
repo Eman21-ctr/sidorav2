@@ -55,6 +55,7 @@ export const NotificationTemplates = ({
     { tag: '{tanggal_kontrol}', label: 'Tgl Kontrol', example: 'Jumat, 25 Sep 2026' },
     { tag: '{jam_kontrol}', label: 'Jam Kontrol', example: '09:00' },
     { tag: '{tanggal_iter}', label: 'Tgl Ambil Obat Iter', example: 'Kamis, 24 Sep 2026' },
+    { tag: '{jam_iter}', label: 'Jam Ambil Obat Iter', example: '08:30' },
     { tag: '{iter_ke}', label: 'Iterasi Ke (angka)', example: 'Iter ke-2' },
     { tag: '{iter_ke_teks}', label: 'Iterasi Ke (teks)', example: 'pertama / kedua / ketiga' },
     { tag: '{ketentuan_kehadiran_iter}', label: 'Keterangan Hadir Iter (Iter 3 Wajib)', example: 'Catatan iter ke-3 wajib bersama pasien' },

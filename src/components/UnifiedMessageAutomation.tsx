@@ -974,6 +974,7 @@ export const UnifiedMessageAutomation = ({
                       '{nama_panggilan}',
                       '{nomor_rm}',
                       '{tanggal_iter}',
+                      '{jam_iter}',
                       '{iter_ke}',
                       '{sisa_iter}',
                       '{nomor_resep}',

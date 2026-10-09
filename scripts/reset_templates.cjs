@@ -93,7 +93,7 @@ Mohon informasi baliknya ya jika pesan ini sudah {sapaan} terima...`,
 
 Perkenalkan saya Ners Nofy dari Poliklinik Rumah Sakit Jiwa Naimata.
 
-Ijin mengingatkan kepada {sapaan} untuk datang kontrol di Poliklinik Jiwa pada hari {tanggal_kontrol}.
+Ijin mengingatkan kepada {sapaan} untuk datang kontrol di Poliklinik Jiwa pada hari {tanggal_kontrol} pukul {jam_kontrol} WITA.
 
 Mohon informasi baliknya ya jika pesan ini sudah {sapaan} terima...`,
   },
@@ -109,7 +109,7 @@ Mohon informasi baliknya ya jika pesan ini sudah {sapaan} terima...`,
 
 Perkenalkan saya Ners Nofy dari Poliklinik Rumah Sakit Jiwa Naimata.
 
-Ijin mengingatkan kepada {sapaan} untuk datang kontrol iter {iter_ke_teks} di Poliklinik Jiwa pada hari {tanggal_iter}.
+Ijin mengingatkan kepada {sapaan} untuk datang kontrol iter {iter_ke_teks} di Poliklinik Jiwa pada hari {tanggal_iter} pukul {jam_iter} WITA.
 
 Mohon informasi baliknya ya jika pesan ini sudah {sapaan} terima...{ketentuan_iter3_tambahan}`,
   },
