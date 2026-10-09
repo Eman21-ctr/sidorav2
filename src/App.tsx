@@ -19,7 +19,6 @@ import { RSJ_INFO, INITIAL_PATIENTS } from './data/initialData';
 import { useSupabaseData } from './hooks/useSupabaseData';
 import { getTodayDateStr, computeRealDailyAnalytics } from './utils/analyticsHelper';
 import { SidoraLogo } from './components/SidoraLogo';
-import { PWAInstallBanner } from './components/PWAInstallBanner';
 
 
 export default function App() {
@@ -851,10 +850,6 @@ export default function App() {
           </div>
         </div>
       </footer>
-
-      {/* Floating PWA Install Banner */}
-      <PWAInstallBanner />
-
     </div>
   );
 }
