@@ -426,86 +426,137 @@ export default function App() {
         });
       }
 
-      // 2. Jadwal Kontrol Dokter (H-3 s/d Hari H)
+      // 2. Jadwal Kontrol Dokter (H-3 s/d Hari H) — loop semua jadwal kontrol
       if (automationSettings.kontrol.enabled && patient.jadwalKontrol) {
         const kontrolTmpl = templates.find(t => t.category === 'kontrol_dokter') || templates[1] || templates[0];
-        const kontrolDate = new Date(patient.jadwalKontrol.tanggal);
-        const refDate = new Date(todayDateStr);
-        const diffDays = Math.round((kontrolDate.getTime() - refDate.getTime()) / (1000 * 3600 * 24));
 
-        let send = false;
-        let tag = '';
-        if (diffDays === 3 && automationSettings.kontrol.h3) { send = true; tag = 'H-3'; }
-        else if (diffDays === 2 && automationSettings.kontrol.h2) { send = true; tag = 'H-2'; }
-        else if (diffDays === 1 && automationSettings.kontrol.h1) { send = true; tag = 'H-1'; }
-        else if (diffDays === 0 && automationSettings.kontrol.h0) { send = true; tag = 'Hari H'; }
+        // Support multi-jadwal kontrol jika ada
+        const kontrolList = patient.jadwalKontrolList && patient.jadwalKontrolList.length > 0
+          ? patient.jadwalKontrolList
+          : [{ tanggal: patient.jadwalKontrol.tanggal, jam: patient.jadwalKontrol.jam, dokter: patient.jadwalKontrol.dokter, poli: patient.jadwalKontrol.poli }];
 
-        if (send) {
-          const { body, recipientName, recipientPhone } = generatePersonalizedMessage(
-            kontrolTmpl,
-            patient,
-            'caregiver'
-          );
+        kontrolList.forEach((jadwal) => {
+          if (!jadwal.tanggal) return;
+          const kontrolDate = new Date(jadwal.tanggal + 'T00:00:00');
+          const refDate = new Date(todayDateStr + 'T00:00:00');
+          const diffDays = Math.round((kontrolDate.getTime() - refDate.getTime()) / (1000 * 3600 * 24));
 
-          newMessages.push({
-            id: `auto-ctrl-${patient.id}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            patientId: patient.id,
-            patientName: patient.nama,
-            noRM: patient.noRM,
-            recipientName,
-            recipientPhone,
-            recipientType: 'Caregiver',
-            category: 'kontrol_dokter',
-            title: `Pengingat Jadwal Kontrol Dokter (${tag})`,
-            body,
-            scheduledAt: `${todayDateStr} ${automationSettings.kontrol.jamKirim}`,
-            sentAt: nowIso,
-            deliveredAt: nowIso,
-            status: 'delivered',
-            bspProvider: bspConfig.providerName,
-          });
-        }
+          let send = false;
+          let tag = '';
+          if (diffDays === 3 && automationSettings.kontrol.h3) { send = true; tag = 'H-3'; }
+          else if (diffDays === 2 && automationSettings.kontrol.h2) { send = true; tag = 'H-2'; }
+          else if (diffDays === 1 && automationSettings.kontrol.h1) { send = true; tag = 'H-1'; }
+          else if (diffDays === 0 && automationSettings.kontrol.h0) { send = true; tag = 'Hari H'; }
+
+          if (send) {
+            const { body, recipientName, recipientPhone } = generatePersonalizedMessage(
+              kontrolTmpl,
+              patient,
+              'caregiver',
+              {
+                customJadwal: {
+                  tanggal: jadwal.tanggal,
+                  jam: (jadwal as any).jam || patient.jadwalKontrol?.jam || '09:00',
+                  dokter: (jadwal as any).dokter || patient.jadwalKontrol?.dokter,
+                  poli: (jadwal as any).poli || patient.jadwalKontrol?.poli,
+                },
+              }
+            );
+
+            newMessages.push({
+              id: `auto-ctrl-${patient.id}-${jadwal.tanggal}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+              patientId: patient.id,
+              patientName: patient.nama,
+              noRM: patient.noRM,
+              recipientName,
+              recipientPhone,
+              recipientType: 'Caregiver',
+              category: 'kontrol_dokter',
+              title: `Pengingat Jadwal Kontrol Dokter (${tag})`,
+              body,
+              scheduledAt: `${todayDateStr} ${automationSettings.kontrol.jamKirim}`,
+              sentAt: nowIso,
+              deliveredAt: nowIso,
+              status: 'delivered',
+              bspProvider: bspConfig.providerName,
+            });
+          }
+        });
       }
 
-      // 3. Jadwal Iter (H-3 s/d Hari H)
-      if (automationSettings.iter.enabled && patient.jadwalIter && patient.jadwalIter.adaIter && patient.jadwalIter.tanggalIter) {
+      // 3. Jadwal Iter (H-3 s/d Hari H) — loop semua iter dari jadwalIterList
+      if (automationSettings.iter.enabled && patient.jadwalIter && patient.jadwalIter.adaIter) {
         const iterTmpl = templates.find(t => t.category === 'iter_resep') || templates[2] || templates[0];
-        const iterDate = new Date(patient.jadwalIter.tanggalIter);
-        const refDate = new Date(todayDateStr);
-        const diffDays = Math.round((iterDate.getTime() - refDate.getTime()) / (1000 * 3600 * 24));
 
-        let send = false;
-        let tag = '';
-        if (diffDays === 3 && automationSettings.iter.h3) { send = true; tag = 'H-3'; }
-        else if (diffDays === 2 && automationSettings.iter.h2) { send = true; tag = 'H-2'; }
-        else if (diffDays === 1 && automationSettings.iter.h1) { send = true; tag = 'H-1'; }
-        else if (diffDays === 0 && automationSettings.iter.h0) { send = true; tag = 'Hari H'; }
+        // Ambil daftar iter: utamakan jadwalIterList (multi-iter), fallback ke jadwalIter tunggal
+        const iterList = patient.jadwalIterList && patient.jadwalIterList.length > 0
+          ? patient.jadwalIterList
+          : (patient.jadwalIter.tanggalIter ? [{
+              id: 'iter-1',
+              nomorIter: 1,
+              tanggal: patient.jadwalIter.tanggalIter,
+              jam: (patient.jadwalIter as any).jam || '08:30',
+              nomorResep: patient.jadwalIter.nomorResep,
+              statusPengambilan: patient.jadwalIter.statusPengambilan || 'belum_diambil' as const,
+              label: 'Iter 1',
+            }] : []);
 
-        if (send) {
-          const { body, recipientName, recipientPhone } = generatePersonalizedMessage(
-            iterTmpl,
-            patient,
-            'caregiver'
-          );
+        const sisaIterasi = iterList.filter(it => it.statusPengambilan !== 'sudah_diambil').length;
+        const totalIterasi = iterList.length;
 
-          newMessages.push({
-            id: `auto-iter-${patient.id}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            patientId: patient.id,
-            patientName: patient.nama,
-            noRM: patient.noRM,
-            recipientName,
-            recipientPhone,
-            recipientType: 'Caregiver',
-            category: 'iter_resep',
-            title: `Pengingat Jadwal Iter (${tag})`,
-            body,
-            scheduledAt: `${todayDateStr} ${automationSettings.iter.jamKirim}`,
-            sentAt: nowIso,
-            deliveredAt: nowIso,
-            status: 'delivered',
-            bspProvider: bspConfig.providerName,
-          });
-        }
+        iterList.forEach((iter) => {
+          if (!iter.tanggal) return;
+          // Lewati iter yang sudah diambil
+          if (iter.statusPengambilan === 'sudah_diambil') return;
+
+          const iterDate = new Date(iter.tanggal + 'T00:00:00');
+          const refDate = new Date(todayDateStr + 'T00:00:00');
+          const diffDays = Math.round((iterDate.getTime() - refDate.getTime()) / (1000 * 3600 * 24));
+
+          let send = false;
+          let tag = '';
+          if (diffDays === 3 && automationSettings.iter.h3) { send = true; tag = 'H-3'; }
+          else if (diffDays === 2 && automationSettings.iter.h2) { send = true; tag = 'H-2'; }
+          else if (diffDays === 1 && automationSettings.iter.h1) { send = true; tag = 'H-1'; }
+          else if (diffDays === 0 && automationSettings.iter.h0) { send = true; tag = 'Hari H'; }
+
+          if (send) {
+            const { body, recipientName, recipientPhone } = generatePersonalizedMessage(
+              iterTmpl,
+              patient,
+              'caregiver',
+              {
+                customJadwal: {
+                  tanggal: iter.tanggal,
+                  jam: iter.jam || '08:30',
+                  nomorResep: iter.nomorResep || patient.jadwalIter?.nomorResep,
+                  iterKe: iter.nomorIter,
+                  totalIterasi,
+                  sisaIterasi,
+                },
+              }
+            );
+
+            const labelPrefix = iter.label || `Iter ${iter.nomorIter}`;
+            newMessages.push({
+              id: `auto-iter-${patient.id}-${iter.id}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+              patientId: patient.id,
+              patientName: patient.nama,
+              noRM: patient.noRM,
+              recipientName,
+              recipientPhone,
+              recipientType: 'Caregiver',
+              category: 'iter_resep',
+              title: `Pengingat Jadwal ${labelPrefix} (${tag})`,
+              body,
+              scheduledAt: `${todayDateStr} ${automationSettings.iter.jamKirim}`,
+              sentAt: nowIso,
+              deliveredAt: nowIso,
+              status: 'delivered',
+              bspProvider: bspConfig.providerName,
+            });
+          }
+        });
       }
     });
 
