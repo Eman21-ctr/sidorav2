@@ -118,6 +118,13 @@ export const UnifiedMessageAutomation = ({
     || templates[0];
   const [editingTemplateText, setEditingTemplateText] = useState(currentEditingTemplate?.templateText || '');
 
+  // Sinkronkan editingTemplateText jika templates dari props berubah (misal setelah load dari Supabase)
+  useEffect(() => {
+    if (currentEditingTemplate) {
+      setEditingTemplateText(currentEditingTemplate.templateText || '');
+    }
+  }, [currentEditingTemplate?.id, currentEditingTemplate?.templateText]);
+
   // When switching category or sesi, update editing text
   const handleSelectTemplateCategory = (cat: 'minum_obat' | 'kontrol_dokter' | 'iter_resep') => {
     setSelectedTemplateCategory(cat);

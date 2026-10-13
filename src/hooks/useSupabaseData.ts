@@ -124,27 +124,34 @@ export function useSupabaseData(): SupabaseDataState {
       // Use data from Supabase
       setPatients(dbPatients);
       if (dbTemplates.length > 0) {
-        // Bandingkan templateText di DB vs INITIAL_TEMPLATES
-        // Jika ada yang berbeda, paksa update ke versi terbaru dari initialData
-        const needsUpgrade = INITIAL_TEMPLATES.some(initTmpl => {
-          const dbTmpl = dbTemplates.find(t => t.id === initTmpl.id);
-          if (!dbTmpl) return true; // template baru belum ada di DB
-          return dbTmpl.templateText.trim() !== initTmpl.templateText.trim();
+        // Susun template: utamakan isi template dari DB (agar editan/kustomisasi user tidak hilang),
+        // dan tambahkan template dari INITIAL_TEMPLATES hanya jika ada template baru yang belum pernah tersimpan di DB.
+        const templateMap = new Map(dbTemplates.map(t => [t.id, t]));
+        const orderedTemplates: MessageTemplate[] = [];
+
+        // 1. Urutkan sesuai INITIAL_TEMPLATES tapi utamakan data DB
+        INITIAL_TEMPLATES.forEach(initTmpl => {
+          if (templateMap.has(initTmpl.id)) {
+            orderedTemplates.push(templateMap.get(initTmpl.id)!);
+            templateMap.delete(initTmpl.id);
+          } else {
+            orderedTemplates.push(initTmpl);
+          }
         });
 
-        if (needsUpgrade) {
-          console.log('[Supabase] Mendeteksi perubahan template — mengupdate ke versi terbaru...');
-          // Gabungkan: pakai INITIAL_TEMPLATES sebagai base (teks terbaru),
-          // tapi pertahankan field lain dari DB jika ada (misal customisasi user)
-          const upgradedTemplates = INITIAL_TEMPLATES.map(initTmpl => {
-            const existing = dbTemplates.find(t => t.id === initTmpl.id);
-            // Selalu pakai templateText terbaru dari initialData
-            return existing ? { ...existing, templateText: initTmpl.templateText } : initTmpl;
-          });
-          setTemplates(upgradedTemplates);
-          upsertTemplates(upgradedTemplates).catch(e => console.error('[Supabase] Gagal upsert upgraded templates:', e));
-        } else {
-          setTemplates(dbTemplates);
+        // 2. Masukkan juga template kustom buatan user jika ada
+        templateMap.forEach(customTmpl => {
+          orderedTemplates.push(customTmpl);
+        });
+
+        setTemplates(orderedTemplates);
+
+        // Hanya jika ada template default baru dari INITIAL_TEMPLATES yang belum ada di DB, simpan ke DB
+        const hasMissingInDb = INITIAL_TEMPLATES.some(
+          initTmpl => !dbTemplates.some(dbT => dbT.id === initTmpl.id)
+        );
+        if (hasMissingInDb) {
+          upsertTemplates(orderedTemplates).catch(e => console.error('[Supabase] Gagal upsert template baru:', e));
         }
       }
       setMessages(dbMessages);

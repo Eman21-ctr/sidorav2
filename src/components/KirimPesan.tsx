@@ -155,6 +155,7 @@ function buildDailyQueue(
 
       let tag = '';
       if (diff === 3) tag = 'H-3 (3 Hari Lagi)';
+      else if (diff === 2) tag = 'H-2 (2 Hari Lagi)';
       else if (diff === 1) tag = 'H-1 (Besok)';
       else if (diff === 0) tag = 'Hari H (Hari Ini!)';
       else return;
@@ -213,6 +214,7 @@ function buildDailyQueue(
         const diff = diffDays(iter.tanggal, todayStr);
         let tag = '';
         if (diff === 3) tag = 'H-3 (3 Hari Lagi)';
+        else if (diff === 2) tag = 'H-2 (2 Hari Lagi)';
         else if (diff === 1) tag = 'H-1 (Besok)';
         else if (diff === 0) tag = 'Hari H (Hari Ini!)';
         else return;
